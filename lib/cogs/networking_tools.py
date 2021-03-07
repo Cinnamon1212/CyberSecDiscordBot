@@ -1,13 +1,28 @@
-import discord, os, requests, random, string, discord.errors, passgen
-import dns
-import dns.resolver
+import discord, os, requests, string, passgen, platform, subprocess, dns, dns.resolver, socket
 from aiohttp import request
 from discord import Embed, colour
 from discord.ext import commands
-from validate_email import validate_email
+
+
+def validate_ip(s):
+    a = s.split('.')
+    if len(a) != 4:
+        return False
+    for x in a:
+        if not x.isdigit():
+            return False
+        i = int(x)
+        if i < 0 or i > 255:
+            return False
+    return True
+
+
 class networkingtools(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+
+
     @commands.command(name="iplookup", description="Provides geoinformation on an IP", aliases=["geoip", "ip", "ipinfo"])
     async def nmap(self, ctx, ip=""):
         if ip == "":
@@ -91,6 +106,32 @@ class networkingtools(commands.Cog):
         else:
             raise
 
+    @commands.command(name="ping", description="Pings any provided IP")
+    async def ping(self, ctx, count: int, ip: str):
+        ip = socket.gethostbyname(ip)
+        if validate_ip(ip) is True:
+            if count <= 10:
+                param = '-n' if platform.system().lower() == 'windows' else '-c'
+                output = subprocess.getoutput(f"ping {param} {count} {ip} #")
+                await ctx.send(f"```{output}```")
+            else:
+                await ctx.send("You may only have up to 10 ping requests")
+        elif validate_ip(ip) is False:
+            await ctx.send("Please enter a valid IP address")
+
+        else:
+            await ctx.send("Unable to validate IP")
+
+    @ping.error
+    async def ping_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please enter the number of pings and the IP")
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send("Please ensure the number of pings is an integer")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("Please ensure you enter a valid IP address!")
+        else:
+            raise
 
 
 
