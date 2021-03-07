@@ -1,5 +1,6 @@
 import discord, os
 from discord.ext import commands
+from discord.ext.commands import CommandNotFound
 client = commands.Bot(command_prefix='./', case_insensitive=True,
                       intents=discord.Intents.all())
 token = open("token0.txt", "r")
@@ -43,11 +44,18 @@ async def on_disconnect(self):
 
 
 async def on_error(self, err, *args, **kwargs):
+    if err == "on_command_error":
+        await args[0].send("Something went wrong")
     raise
 
 
 async def on_command_error(self, ctx, exc):
-    raise getattr(exc, "original", exc)
+    if isinstance(exc, CommandNotFound):
+        await ctx.send("No such command, please use ./help")
+    elif hasattr(exc, "original"):
+        raise exc.original
+    else:
+        raise exc
 
 
 async def on_ready(self):
