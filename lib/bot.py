@@ -1,10 +1,13 @@
-import discord, os
+import discord, os, json
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 client = commands.Bot(command_prefix='./', case_insensitive=True,
                       intents=discord.Intents.all())
-token = open("token0.txt", "r")
 
+with open('secrets.json', 'r') as secrets:
+    data = secrets.read()
+tokendata = json.loads(data)
+token = tokendata['token']
 
 @client.command()
 @commands.is_owner()
@@ -17,7 +20,7 @@ async def unload(ctx, extension):
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
-client.run(token.readline(), reconnect=True)
+client.run(token, reconnect=True)
 
 
 async def shutdown(self):
