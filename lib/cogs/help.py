@@ -2,6 +2,17 @@ import discord, math, re
 from discord.ext import commands
 from discord import Embed
 
+def syntax(command):
+    cmd_and_aliases = "|".join([str(command), *command.aliases])
+    params = []
+
+    for key, value in command.params.items():
+        if key not in ("self", "ctx"):
+            params.append(f"[{key}]" if "NoneType" in str(value) else f"<{key}>")
+
+    params = " ".join(params)
+    return f"`{cmd_and_aliases} {params}`"
+
 class help(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -15,7 +26,6 @@ class help(commands.Cog):
         embed.set_thumbnail(url=self.client.user.avatar_url)
 
         cogs = [c for c in self.client.cogs.keys()]
-        # cogs.remove('')
         totalPages = math.ceil(len(cogs) / 4)
 
         if re.search(r"\d", str(cog)):
@@ -24,7 +34,7 @@ class help(commands.Cog):
                 await ctx.send(f"Invalid page number: {cog} Please pick from {totalPages} pages or with no args.")
                 return
 
-            embed.set_footer(text=f"<> - Required & [] - Optional | Page {cog} of {totalPages}")
+            embed.set_footer(text=f"Page {cog} of {totalPages}")
 
             neededCogs = []
             for i in range(4):
@@ -40,7 +50,7 @@ class help(commands.Cog):
                         continue
                     elif command.parent is not None:
                         continue
-                    commandList += f"**{command.name}** - *{command.description}* - *\n"
+                    commandList += f"**{command.name}** - *{command.description}** -  Format:** {syntax(command)}*\n\n"
                 commandList += "\n"
 
                 embed.add_field(name=cog, value=commandList, inline=False)
@@ -52,8 +62,7 @@ class help(commands.Cog):
                 return
 
             embed.set_footer(
-                text=f"<> - Required & [] - Optional | Cog {(lowerCogs.index(cog.lower())+1)} of {len(lowerCogs)}"
-            )
+                text=f"Cog {(lowerCogs.index(cog.lower())+1)} of {len(lowerCogs)}. [] Optional, <> Required.")
 
             helpText = ""
 
@@ -64,16 +73,7 @@ class help(commands.Cog):
                 elif command.parent is None:
                     continue
 
-                helpText += f"```{command.name}```\n**{command.description}**\n\n"
-
-                if len(command.aliases) > 0:
-                    helpText += f'**Aliases: ** `{", ".join(command.aliases)}`'
-                helpText += '\n'
-
-                prefix = self.client.prefix
-
-                helpText += f'**Format:** `{prefix}{command.name} {command.usage if command.usage is not None else ""}`\n\n'
-            embed.description = helpText
+                helpText += f"```{command.name}```\n**{command.description}**\n Format:** {syntax(command)}"
 
         else:
             await ctx.send(f"Invalid argument: `{cog}`\nPlease pick from {totalPages} pages.")
