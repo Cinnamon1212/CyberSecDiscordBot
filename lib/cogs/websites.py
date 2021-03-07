@@ -1,4 +1,4 @@
-import discord, os, requests
+import discord, os, requests, json
 import urllib3
 from discord import Embed, colour
 from discord.ext import commands
@@ -28,7 +28,11 @@ class websites(commands.Cog):
 
     @commands.command(name="emailchecker", description="Verifies if an email is real or not", aliases=["emailverify", "emailinfo"])
     async def emailchecker(self, ctx, email: str):
-        url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key=nope"
+        with open('secrets.json', 'r') as secrets:
+            data1 = secrets.read()
+        hunterapikey = json.loads(data1)
+        apikey = hunterapikey['hunteriokey']
+        url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={apikey}"
         async with request("GET", url, headers={}) as response:
             if response.status == 200:
                 data = await response.json()
