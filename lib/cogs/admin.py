@@ -63,10 +63,11 @@ class admin(commands.Cog):
     @commands.command(name="userinfo", aliases=['user', 'memberinfo'], description="Gathers information on a user")
     async def userinfo(self, ctx, *, member: discord.Member):
         roles = [role for role in member.roles]
-        embed = discord.Embed(colour=member.colour, timestamp=ctx.message.created_at, inline=False)
+        embed = discord.Embed(colour=member.colour, inline=False)
         embed.set_author(name=f"User info for {member}")
         embed.set_thumbnail(url=member.avatar_url)
-        embed.set_footer(text=f"Requested by {ctx.author}")
+        time = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         embed.add_field(name="ID:", value=member.id)
         embed.add_field(name="Guild name: ", value=member.display_name)
         embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"))
@@ -82,15 +83,16 @@ class admin(commands.Cog):
         name, desc, owner, id, region, membercount, servericon = str(ctx.guild.name), str(ctx.guild.description), str(ctx.guild.owner), str(ctx.guild.id), str(ctx.guild.region), str(ctx.guild.member_count), str(ctx.guild.icon_url)
 
         embed = discord.Embed(
-            title=name + "Server information",
+            title=name + " Server information",
             description=desc,
-            colour=discord.Colour.green(),
-            timestamp=ctx.message.created_at)
+            colour=discord.Colour.green())
         embed.set_thumbnail(url=servericon)
         embed.add_field(name="Owner:", value=owner, inline=True)
         embed.add_field(name="ID:", value=id, inline=True)
         embed.add_field(name="Region:", value=region, inline=True)
         embed.add_field(name="member count:", value=membercount, inline=True)
+        time = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 
 
