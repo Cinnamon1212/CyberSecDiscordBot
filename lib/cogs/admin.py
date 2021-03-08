@@ -81,16 +81,19 @@ class admin(commands.Cog):
     @commands.command(name="serverinfo", aliases=['server', 'guildinfo'], description="Gathers information of the server")
     async def serverinfo(self, ctx):
         name, desc, owner, id, region, membercount, servericon = str(ctx.guild.name), str(ctx.guild.description), str(ctx.guild.owner), str(ctx.guild.id), str(ctx.guild.region), str(ctx.guild.member_count), str(ctx.guild.icon_url)
-
+        roles = ctx.guild.roles
+        rolecount = len(roles)
         embed = discord.Embed(
-            title=name + " Server information",
+            title=f"{name} information",
             description=desc,
             colour=discord.Colour.green())
         embed.set_thumbnail(url=servericon)
-        embed.add_field(name="Owner:", value=owner, inline=True)
-        embed.add_field(name="ID:", value=id, inline=True)
-        embed.add_field(name="Region:", value=region, inline=True)
-        embed.add_field(name="member count:", value=membercount, inline=True)
+        embed.add_field(name="Owner: ", value=owner, inline=True)
+        embed.add_field(name="ID: ", value=id, inline=True)
+        embed.add_field(name="Region: ", value=region, inline=True)
+        embed.add_field(name="Member count: ", value=f"This server has {membercount} members", inline=True)
+        embed.add_field(name="Roles: ", value=f"This server has {rolecount - 1} roles")
+        embed.set_thumbnail(url=ctx.guild.icon_url)
         time = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
