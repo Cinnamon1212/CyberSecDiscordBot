@@ -1,4 +1,4 @@
-import discord, os, requests, string, passgen, platform, subprocess, dns, dns.resolver, socket
+import discord, os, requests, string, passgen, platform, subprocess, socket
 from aiohttp import request
 from discord import Embed, colour
 from discord.ext import commands
@@ -54,23 +54,27 @@ class networkingtools(commands.Cog):
                     await ctx.send("There was an issue with the API, please try again later!")
                     print(f" API returned {response.status}")
 
-    @commands.command(name="DNSLookup", description="DNS Lookup comamnd, takes DNS and reurned A type records", aliases=["DNS", "nameserverlookup"])
-    async def DNSLookup(self, ctx, DNS=""):
-
-        if DNS == "":
-            await ctx.send("Please enter a nameserver to lookup")
+    @commands.command(name="dig", description="Dig comamnd, takes a domain or IP")
+    async def dig(self, ctx, DNS: str):
+        DNS = socket.gethostbyname(DNS)
+        if validate_ip(DNS) is True:
+            output = os.popen("dig " + DNS).read()
+            await ctx.send(f"```\n {output}```")
+        elif validate_ip(DNS) is False:
+            await ctx.send("The DNS gave an invalid IP")
         else:
-            result = dns.resolver.query(DNS, 'A')
-            ips = set({})
-            for ipval in result:
-                output = ipval.to_text()
-                ips.add(output)
-            embed = Embed(title=f"DNS Lookup for {DNS}")
-            for ip in ips:
-                embed.add_field(name="Result: ", value=ip, inline=True)
-            time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-            await ctx.send(embed=embed)
+            await ctx.send("Unable to validate DNS")
+
+    @dig.error
+    async def DNS_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please enter an IP or Domain to dig")
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send("Please enter an IP or Domain")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("Please ensure you enter a valid domain or IP!")
+        else:
+            raise
 
     @commands.command(name="passgen", description="generates a number of passwords with a given length", aliases=["passwordgenerator", "password"])
     async def passwords(self, ctx, number: int, length: int):
