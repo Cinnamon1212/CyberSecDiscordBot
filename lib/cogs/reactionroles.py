@@ -15,7 +15,7 @@ class reactroles(commands.Cog):
         async with aiofiles.open("reactionroles.txt", mode="r") as file:
             lines = await file.readlines()
             for line in lines:
-                data = line.split("")
+                data = line.split(" ")
                 self.client.reaction_roles.append((int(data[0]), int(data[1]), data[2].strip("\n")))
 
     @commands.Cog.listener()
@@ -33,7 +33,7 @@ class reactroles(commands.Cog):
                 await guild.get_member(payload.user_id).remove_roles(guild.get_role(role_id))
                 return
 
-    @commands.command()
+    @commands.command(name="set_reaction", alias=["ReactionRole", "reactrole"], description="Set a reaction role using ./set_reaction @role (messageid) (emoji)")
     async def set_reaction(self, ctx, role: discord.Role = None, msg: discord.Message = None, emoji=None):
         if role is not None and msg is not None and emoji is not None:
             await msg.add_reaction(emoji)
