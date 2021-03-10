@@ -4,14 +4,8 @@ from itertools import cycle
 from discord import Colour, Embed
 from discord import AppInfo
 version = "Alpha 2.0"
-owner = """```
-  ______                             ______ ______
- / ___(____  ___ ___ ___ _ ___  ___ <  |_  <  |_  |
-/ /__/ / _ \/ _ / _ `/  ' / _ \/ _ \/ / __// / __/
-\___/_/_//_/_//_\_,_/_/_/_\___/_//_/_/____/_/____/
+owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 
-
-```"""
 class misc(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -31,12 +25,12 @@ class misc(commands.Cog):
         _____  __   _        _____ __   _ _______
        |     | | \  | |        |   | \  | |______
        |_____| |  \_| |_____ __|__ |  \_| |______
-      
+
 Latency: {round(self.client.latency * 1000)} ms
 
             """)
 
-    @commands.command(name="latency", aliases=['botping'], description="Tests the latency of the bot")
+    @commands.command(name="latency", aliases=['botping', 'bping'], description="Tests the latency of the bot")
     async def ping(self, ctx):
         await ctx.send(f'Pong! {round(self.client.latency * 1000)} ms')
 
@@ -44,10 +38,11 @@ Latency: {round(self.client.latency * 1000)} ms
     async def version(self, ctx):
         embed=Embed(title=f"Information on {self.client.user}",
                     colour=discord.Colour.random())
-        embed.set_thumbnail(url=self.client.icon_url)
-        embed.add_field(name="Creator: ", value=owner, inline=True)
-        embed.add_field(name="Version: ", value=version, inline=True)
-        embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot" , inline=True)
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Version: ", value=version, inline=False)
+        embed.add_field(name="Number of servers: ", value=f"{len(self.client.guilds)}", inline=False)
+        embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot", inline=False)
+        embed.set_footer(text=f"Creator: {owner}")
         await ctx.send(embed=embed)
 
 
@@ -63,7 +58,7 @@ Latency: {round(self.client.latency * 1000)} ms
             embed.add_field(name=f"Role #{num}", value=role)
             num += 1
         time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))#
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 
 def setup(client):
