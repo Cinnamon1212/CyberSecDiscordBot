@@ -1,4 +1,4 @@
-import discord, os, requests, string, passgen, platform, subprocess, socket
+import discord, os, requests, string, passgen, platform, subprocess, socket, json, asyncio, time
 from aiohttp import request
 from discord import Embed, colour
 from discord.ext import commands
@@ -138,6 +138,87 @@ class networkingtools(commands.Cog):
             raise
 
 
+    @commands.command(name="nmap", description="Performs basic scans using the nmap module. ")
+    async def nmapscan(self, ctx, scantype: str, ip: str):
+        await ctx.send("This command may take a while, please wait for your results in your DMs")
+        hostname = socket.gethostname()
+        if ip == socket.gethostbyname(hostname) or ip == "127.0.0.1" or ip == "localhost":
+            await ctx.send("I'm not gonna be scanning myself, sorry")
+        else:
+            if scantype == "-sV":
+
+                cmd = f"nmap -sV -oN {ip}_{ctx.author.name}.txt {ip}"
+
+                await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                filename = f"./{ip}_{ctx.author.name}.txt"
+                check = False
+                while check is False:
+                    if os.path.isfile(filename) is False:
+                        print("In process")
+                        time.sleep(10)
+                    else:
+                        if os.stat(filename).st_size != 0:
+                            check = True
+                if check is True:
+                    await ctx.author.send("Here are your nmap scan results: ")
+                    await ctx.author.send(file=discord.File(filename))
+                    os.remove(filename)
+                else:
+                    await ctx.send("An error has occured")
+
+            elif scantype == "-sT":
+                cmd = f"nmap -sV -oN {ip}_{ctx.author.name}.txt {ip}"
+
+                await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                filename = f"./{ip}_{ctx.author.name}.txt"
+                check = False
+                while check is False:
+                    if os.path.isfile(filename) is False:
+                        print("In process")
+                        time.sleep(10)
+                    else:
+                        if os.stat(filename).st_size != 0:
+                            check = True
+                if check is True:
+                    await ctx.author.send("Here are your nmap scan results: ")
+                    await ctx.author.send(file=discord.File(filename))
+                    os.remove(filename)
+                else:
+                    await ctx.send("An error has occured")
+
+            elif scantype == "-PS":
+                cmd = f"nmap -PS -oN {ip}_{ctx.author.name}.txt {ip}"
+
+                await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                filename = f"./{ip}_{ctx.author.name}.txt"
+                check = False
+                while check is False:
+                    if os.path.isfile(filename) is False:
+                        print("In process")
+                        time.sleep(10)
+                    else:
+                        if os.stat(filename).st_size != 0:
+                            check = True
+                if check is True:
+                    await ctx.author.send("Here are your nmap scan results: ")
+                    await ctx.author.send(file=discord.File(filename))
+                    os.remove(filename)
+                else:
+                    await ctx.send("An error has occured")
+            else:
+                await ctx.send("Please enter a valid scan type: -sV, -sT, -PS")
 
 def setup(client):
     client.add_cog(networkingtools(client))
