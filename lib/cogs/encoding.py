@@ -96,13 +96,33 @@ class encoding(commands.Cog):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f"Please wait {error.retry_after} before using this command")
 
-    @commands.command(name="md5encrypt", description="Hashes a string using MD5", aliases=["md5"])
-    async def md5encrypt(self, ctx, message: str):
-        hashed = hashlib.md5(message.encode())
-        await ctx.send(f"Your string hashed is: {hashed.hexdigest()}")
+    @commands.command(name="hash", description="Hashes a string using a given algorithm (MD5, SHA1, SHA224, SHA256, SHA384 and SHA512)", aliases=["hashstring", "crypt"])
+    async def hash(self, ctx, hashtype, *, message: str):
+        if hashtype == "md5" or hashtype == "MD5":
+            hashed = hashlib.md5(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        elif hashtype == "sha1" or hashtype == "SHA1":
+            hashed = hashlib.sha1(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        elif hashtype == "sha224" or hashtype == "SHA224":
+            hashed = hashlib.sha224(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        elif hashtype == "sha256" or hashtype == "SHA256":
+            hashed = hashlib.sha256(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        elif hashtype == "sha384" or hashtype == "SHA384":
+            hashed = hashlib.sha384(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        elif hashtype == "sha512" or hashtype == "SHA512":
+            hashed = hashlib.sha1(message.encode())
+            await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
+        else:
+            await ctx.send("Please choose an algorithm out of: MD5, SHA1, SHA224, SHA256, SHA384 and SHA512")
 
-    @md5encrypt.error
-    async def md5(self, ctx, error):
+
+
+    @hash.error
+    async def hash_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter a string to hash")
         else:
