@@ -31,7 +31,7 @@ class minecraft(commands.Cog):
                         online = data['online']
                         embed = Embed(title=data["ip"],
                                       description=str(motd),
-                                      colour=ctx.author.colour,
+                                      colour=discord.Colour.random(),
                                       inline=False)
                         embed.set_thumbnail(url=f"https://api.minetools.eu/favicon/{ip}/{mcport}")
                         embed.add_field(name="Players online: ", value=str(players))
@@ -46,6 +46,11 @@ class minecraft(commands.Cog):
             else:
                 await ctx.send("API error")
                 print(f" API returned {response.status}")
+
+    @minecraftstatus.error
+    async def mcstatus_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please provide a server")
 
     @commands.command(name="mcplayer", aliases=["Playerlookup", "plookup"], description="Returns information on a minecraft player")
     async def mcplayer(self, ctx, playername):
@@ -78,6 +83,13 @@ class minecraft(commands.Cog):
             else:
                 await ctx.send("API Error")
                 print(f"API returned {response.status}")
+
+    @mcplayer.error
+    async def mcplayer_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please provide a minecraft player")
+        else:
+            raise
 
 
 
