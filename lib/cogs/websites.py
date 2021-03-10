@@ -1,5 +1,5 @@
-import discord, os, requests, json
-import urllib3
+import discord, os, requests, json, urllib3
+from bs4 import BeautifulSoup
 from discord import Embed, colour
 from discord.ext import commands
 from aiohttp import request
@@ -88,6 +88,8 @@ class websites(commands.Cog):
         else:
             raise
             await ctx.send("An error has occured!")
+
+
 
 def setup(client):
     client.add_cog(websites(client))
