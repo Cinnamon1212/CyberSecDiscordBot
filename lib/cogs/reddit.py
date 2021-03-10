@@ -6,10 +6,10 @@ from discord.ext import commands
 from discord import Embed
 
 
-reddit = praw.Reddit(client_id="",
-                     client_secret="",
-                     username="",
-                     password="",
+reddit = praw.Reddit(client_id="mJfUbgRdBTcR6A",
+                     client_secret="78eg7HF1H9Ie1uD7NjGidsCgPNh2tg",
+                     username="C1nn4m0nGinger",
+                     password="T22N9mf6hXHYmhC",
                      user_agent="pythonbot")
 
 
@@ -21,30 +21,6 @@ class reddit_commands(commands.Cog):
     async def rule34(self, ctx):
         if ctx.channel.is_nsfw():
             subreddit = reddit.subreddit("rule34")
-            all_subs = []
-
-            top = subreddit.top(limit=50)
-
-            for submission in top:
-                all_subs.append(submission)
-
-            random_sub = random.choice(all_subs)
-
-            name = random_sub.title
-            url = random_sub.url
-
-            embed = discord.Embed(title=name, color=discord.Color.gold())
-            embed.set_image(url=url)
-            embed.set_footer(text=f"Asked by {ctx.author.name}")
-
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send("Please use this command in an NSFW channel")
-
-    @commands.command(name="boobs", aliases=['boob', 'tits'], description="Random post from the boobs subreddit")
-    async def boobs(self, ctx):
-        if ctx.channel.is_nsfw():
-            subreddit = reddit.subreddit("boobs")
             all_subs = []
 
             top = subreddit.top(limit=50)
