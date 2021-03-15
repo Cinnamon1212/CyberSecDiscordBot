@@ -1,4 +1,4 @@
-import discord, base64, re, os, hashlib
+import discord, base64, re, os, hashlib, subprocess
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 from discord import Embed, Colour
@@ -128,6 +128,21 @@ class encoding(commands.Cog):
         else:
             raise
 
+    @commands.command(name="hash-identifier", description="Tries to identify a hash", aliases=["hashid", "hashidentifier"])
+    async def hashidentifier(self, ctx, hash: str):
+        symbols = "!$%^&*()_+|~-=`{}[]:\";'<>?,./"
+        if any(c in symbols for c in hash):
+            await ctx.send("Invalid hash")
+        else:
+            hashid = subprocess.run(["hashid", f"{hash}", "-j"], stdout=subprocess.PIPE, text=True)
+            await ctx.send(f"```\n{hashid.stdout}```")
+
+    @hashidentifier.error
+    async def hashid_error(self, ctx, error):
+        if isinstance(error.commands.MissingRequiredArgument):
+            await ctx.send("Please enter a hash to identify")
+        else:
+            raise
 
 def setup(client):
     client.add_cog(encoding(client))
