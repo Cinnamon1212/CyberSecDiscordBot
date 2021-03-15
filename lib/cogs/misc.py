@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from itertools import cycle
 from discord import Colour, Embed
 from discord import AppInfo
-version = "Alpha 2.0"
+version = "Alpha 3.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 
 class misc(commands.Cog):
