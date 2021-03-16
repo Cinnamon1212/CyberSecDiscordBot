@@ -289,5 +289,26 @@ class networkingtools(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter an IP and ports to check")
 
+    @commands.command(name="msfvenom", description="Geneate msf payload, for payloads type ./msfvenom options 1 1", aliases=["msfpayload"])
+    async def msfvenom(self, ctx, payload:str, ip: str, port: int):
+        if payload == "windows/meterpeter/reverse_tcp":
+            pass
+        elif payload == "windows/shell/reverse_tcp":
+            pass
+        elif payload == "linux/x64/meterpeter/reverse_tcp":
+            pass
+        elif payload == "linux/x32/meterpeter/reverse_tcp":
+            pass
+        elif payload == "options":
+            await ctx.send("""Available payloads:
+                                windows/meterpeter/reverse_tcp
+                                windows/shell/reverse_tcp
+                                linux/x64/meterpeter/reverse_tcp
+                                linux/x32/meterpeter/reverse_tcp
+                            Other payloads will be accepted in the same format
+            """)
+        else:
+            pass
+
 def setup(client):
     client.add_cog(networkingtools(client))
