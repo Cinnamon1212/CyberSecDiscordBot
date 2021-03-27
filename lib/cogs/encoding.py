@@ -2,6 +2,7 @@ import discord, base64, re, os, hashlib, subprocess
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 from discord import Embed, Colour
+from Crypto.Cipher import AES
 
 class encoding(commands.Cog):
     def __init__(self, client):
@@ -37,6 +38,39 @@ class encoding(commands.Cog):
             await ctx.send("Please enter a base64 string to decode")
         else:
             raise
+
+    @commands.command("Caesercipher", description="Caeser Ciphers a given string", aliases=["caeser", "ROT"])
+    async def caeser(self, ctx, shift: int, *, message: str):
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        alphabet = list(alphabet)
+        message = list(message)
+        cipher = ''
+
+        for letter in message:
+            if letter in alphabet:
+                oldindex = alphabet.index(letter)
+                newindex = (oldindex + shift) % len(alphabet)
+                newletter = alphabet[newindex]
+            else:
+                newletter = letter
+            cipher += newletter
+        message = ''.join(c for c in message)
+        embed = Embed(title="Caeser cipher",
+                      description=f"Shift: {shift}",
+                      colour = discord.Colour.random())
+        embed.add_field(name="Original message: ", value = message)
+        embed.add_field(name="Ciphered message: ", value = cipher)
+        await ctx.send(embed=embed)
+
+    @caeser.error
+    async def caeser_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("Please use ./caeser (shift) (message)")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please use ./caeser (shift) (message)")
+        else:
+            raise
+
 
     @commands.command("decaesercipher", description="bruteforces a ceaser cipher", aliases=["decodecaesercipher", "caeserdecode", "deCaeser"])
     @commands.cooldown(rate=1, per=10)
@@ -114,7 +148,7 @@ class encoding(commands.Cog):
             hashed = hashlib.sha384(message.encode())
             await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
         elif hashtype == "sha512" or hashtype == "SHA512":
-            hashed = hashlib.sha1(message.encode())
+            hashed = hashlib.sha512(message.encode())
             await ctx.send(f"Your string hashed in {hashtype} is: {hashed.hexdigest()}")
         else:
             await ctx.send("Please choose an algorithm out of: MD5, SHA1, SHA224, SHA256, SHA384 and SHA512")
