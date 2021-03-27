@@ -4,7 +4,6 @@ A cyber security discord bot with some GP commands using different APIs, command
 
 Please feel free to host this bot yourself and send me a message on [![Cinnamon#7617](https://img.shields.io/badge/Discord-Cinnamon%237617-blue?style=plastic&logo=discord.svg)](https://discord.com/)   
 To Do list:  
-* Add metasploit payload creation (msfvenom command)
 * Add AI chat bot
 * Create music cog
 * Add more fun commands
