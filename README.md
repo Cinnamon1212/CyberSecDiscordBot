@@ -14,4 +14,3 @@ Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212
 Feel free to check out my other repos:  
 * [LAN Pwning Toolkit](https://github.com/Cinnamon1212/LAN_Pwning_Toolkit)
 * [BlueKit](https://github.com/Cinnamon1212/BlueKit)
-* 
