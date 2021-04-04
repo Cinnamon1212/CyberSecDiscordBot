@@ -49,17 +49,35 @@ Latency: {round(self.client.latency * 1000)} ms
     @commands.command(name="listofroles", description="Gives a list of roles", aliases=["roles", "serverroles"])
     async def listofroles(self, ctx):
         roles = ctx.guild.roles
-        embed = Embed(title="List of roles: ",
-                      colour=discord.Colour.random())
+        roles.reverse()
+        roles.pop(-1)
+        if len(roles) <= 25:
+            embed = Embed(title="List of roles: ",
+                          colour=discord.Colour.random())
 
-        num = 1
-        roles.pop(0)
-        for role in roles:
-            embed.add_field(name=f"Role #{num}", value=role)
-            num += 1
-        time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+            num = 1
+            for role in roles:
+                embed.add_field(name=f"Role #{num}", value=role, inline=False)
+                num += 1
+            time = ctx.message.created_at
+            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+            await ctx.send(embed=embed)
+        else:
+            num = 1
+            RoleList = ""
+            for role in roles:
+                RoleList += f"#{num} {role}\n"
+                num += 1
+            await ctx.send(f"```{RoleList}```")
+    @commands.command(name="credits", description="Info on the bot creator!", aliases=["owner", "creator", "credit"])
+    async def credits(self, ctx):
+        embed = Embed(title="Credits", colour=discord.Colour.dark_purple())
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Creator: ", value=owner)
+        embed.add_field(name="Github: ", value="[Cinnamon1212](https://github.com/Cinnamon1212)", inline=False)
+        embed.add_field(name="Patreon: ", value="[Cinnamon1212](https://www.patreon.com/cinnamon1212)", inline=False)
+        embed.add_field(name="Instagram: ", value="[Cinnamon.1212](https://www.instagram.com/cinnamon.1212/)", inline=False)
+        embed.set_footer(text="Feel free to check out my other projects on Github!\nAll donations are appreciated and support the bot, as well as other projects!")
         await ctx.send(embed=embed)
-
 def setup(client):
     client.add_cog(misc(client))
