@@ -84,7 +84,12 @@ class fun(commands.Cog):
             return await ctx.message.add_reaction("\N{WARNING SIGN}")
         msg = clean_string(msg)
         destination = ctx.message.channel if destination is None else destination
-        await destination.send(msg)
+        embed = Embed(title=f"{ctx.author.name} says: ",
+                      colour=ctx.author.colour)
+        embed.add_field(name=msg, value="⠀")
+        embed.set_thumbnail(url=ctx.author.avatar_url)
+        await destination.send(embed=embed)
+
         return await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @echo.error
