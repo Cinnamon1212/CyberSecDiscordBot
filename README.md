@@ -9,7 +9,7 @@ To Do list:
 * Add more fun commands
 * Tidy code/Remove clutter
 
-[Invite Link](https://bit.ly/3fGmftl)
+Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)
 
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)
 
