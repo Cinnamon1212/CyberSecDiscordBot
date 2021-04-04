@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from itertools import cycle
 from discord import Colour, Embed
 from discord import AppInfo
-version = "Alpha 3.0"
+version = "Beta 1.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 
 class misc(commands.Cog):
@@ -78,6 +78,25 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Patreon: ", value="[Cinnamon1212](https://www.patreon.com/cinnamon1212)", inline=False)
         embed.add_field(name="Instagram: ", value="[Cinnamon.1212](https://www.instagram.com/cinnamon.1212/)", inline=False)
         embed.set_footer(text="Feel free to check out my other projects on Github!\nAll donations are appreciated and support the bot, as well as other projects!")
+        await ctx.send(embed=embed)
+
+    @commands.command(name="invite", description="Returns invite link", aliases=["inv", "botinvite"])
+    async def invite(self, ctx):
+        embed = Embed(title="CyberSecurity Bot", colour=discord.Colour.random())
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Shortened link: ", value="[Shortened](https://bit.ly/3fGmftl)", inline=False)
+        embed.add_field(name="Full link: ", value="[Full](https://discord.com/api/oauth2/authorize?client_id=766312320589627463&permissions=8&scope=bot)", inline=False)
+        time = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+        await ctx.send(embed = embed)
+
+    @commands.command(name="top.gg", description="Top.gg link", aliases=["topgg", "top"])
+    async def topgg(self, ctx):
+        embed = Embed(title="top.gg")
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Link: ", value="[CyberSecurity Bot](https://top.gg/bot/766312320589627463)")
+        time = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 def setup(client):
     client.add_cog(misc(client))
