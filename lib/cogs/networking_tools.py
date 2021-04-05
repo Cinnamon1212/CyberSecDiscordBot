@@ -1,45 +1,49 @@
-import discord, os, requests, string, passgen, platform, subprocess, socket, json, asyncio, time, threading
+import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re
+from datetime import datetime
 from discord import Embed, colour
 from discord.ext import commands
 from aiohttp import request
 
 def validate_ip(s):
-    a = s.split('.')
-    if len(a) != 4:
+    if s != None:
+        a = s.split('.')
+        if len(a) != 4:
+            return False
+        for x in a:
+            if not x.isdigit():
+                return False
+            i = int(x)
+            if i < 0 or i > 255:
+                return False
+    else:
         return False
-    for x in a:
-        if not x.isdigit():
-            return False
-        i = int(x)
-        if i < 0 or i > 255:
-            return False
     return True
 
-
-banners = []
-
-
-def grab_banner(ip, port):
-    connect = socket.socket()
-    connect.settimeout(3.0)
-    connect.connect((ip, port))
+def validate_port(s):
     try:
-        banner = connect.recv(10240)
-        banner = banner.decode('utf-8')
-    except socket.timeout:
-        banner = f"{port} was unresponsive!"
-    connect.close()
-    banners.append(banner)
+        s = int(s)
+    except ValueError:
+        return False
 
-def nmap_whitelist(ctx):
-    whitelisted = [292382410530750466]
-    return ctx.author.id in whitelisted
+    if s <= 65535:
+        return True
+    else:
+        return False
 
+async def nmap_scan(scantype, ip, ports = ""):
+    scanner = aionmap.PortScanner()
+    if ports != "":
+        if "," not in ports:
+            ports = re.sub("\s+", ",", ports.strip())
+        result = await scanner.scan(ip, ports, scantype, sudo=False)
+        return result
+    else:
+        result = await scanner.scan(ip, None, scantype, sudo=False)
+        return result
 
 class networkingtools(commands.Cog):
     def __init__(self, client):
         self.client = client
-
 
     @commands.command(name="iplookup", description="Provides geoinformation on an IP", aliases=["geoip", "ip", "ipinfo"])
     async def nmap(self, ctx, ip=""):
@@ -117,6 +121,7 @@ class networkingtools(commands.Cog):
             embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
             await ctx.author.send(embed=embed)
             await ctx.send("Passwords were send to your DMs!")
+
     @passwords.error
     async def passgen_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
@@ -133,8 +138,7 @@ class networkingtools(commands.Cog):
         ip = socket.gethostbyname(ip)
         if validate_ip(ip) is True:
             if count <= 10:
-                param = '-n' if platform.system().lower() == 'windows' else '-c'
-                output = subprocess.getoutput(f"ping {param} {count} {ip} #")
+                output = subprocess.getoutput(f"ping -c {count} {ip} #")
                 await ctx.send(f"```{output}```")
             else:
                 await ctx.send("You may only have up to 10 ping requests")
@@ -157,143 +161,97 @@ class networkingtools(commands.Cog):
 
 
     @commands.command(name="nmap", description="Performs basic scans using the nmap. The bot will be paused while this runs! ")
-    @commands.check(nmap_whitelist)
-    async def nmapscan(self, ctx, scantype: str, ip: str):
-        hostname = socket.gethostname()
-        if ip == "127.0.0.1" or ip == "localhost" or ip == hostname:
-            await ctx.send("I'm not gonna be scanning myself, sorry")
-        else:
+    @commands.cooldown(2, 30, commands.BucketType.user)
+    async def nmapscan(self, ctx, scantype: str, ip = None , *, ports = "" ):
+        scan_types = ['-PS', '-sT', '-sV']
+        if scantype in scan_types:
             try:
                 ip = socket.gethostbyname(ip)
-            except:
-                await ctx.send("Unable to connect to IP")
-            if validate_ip(ip) is True:
-                if scantype == "-sV":
-                    await ctx.send("This command may take a while, please wait for your results in your DMs")
-
-                    cmd = f"nmap -sV -oN {ip}_{ctx.author.name}.txt {ip}"
-                    await asyncio.create_subprocess_shell(
-                        cmd,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
-                    )
-                    filename = f"./{ip}_{ctx.author.name}.txt"
-                    check = False
-                    while check is False:
-                        if os.path.isfile(filename) is False:
-                            print("In process")
-                            time.sleep(10)
-                        else:
-                            if os.stat(filename).st_size != 0:
-                                check = True
-                    if check is True:
-                        await ctx.author.send("Here are your nmap scan results: ")
-                        await ctx.author.send(file=discord.File(filename))
-                        os.remove(filename)
+            except TypeError:
+                await ctx.send("Please enter an IP! Usage: ./nmap [scantype] [ip] (port)")
+            if validate_ip(ip):
+                if ports != "":
+                    if "," in ports:
+                        a = ports.split(",")
                     else:
-                        await ctx.send("An error has occured")
-
-                elif scantype == "-sT":
-                    await ctx.send("This command may take a while, please wait for your results in your DMs")
-
-                    cmd = f"nmap -sT -oN {ip}_{ctx.author.name}.txt {ip}"
-                    await asyncio.create_subprocess_shell(
-                        cmd,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
-                    )
-                    filename = f"./{ip}_{ctx.author.name}.txt"
-                    check = False
-                    while check is False:
-                        if os.path.isfile(filename) is False:
-                            print("In process")
-                            time.sleep(10)
-                        else:
-                            if os.stat(filename).st_size != 0:
-                                check = True
-                    if check is True:
-                        await ctx.author.send("Here are your nmap scan results: ")
-                        await ctx.author.send(file=discord.File(filename))
-                        os.remove(filename)
+                        a = ports.split()
+                    for port in a:
+                        if validate_port(port):
+                            validports = True
+                    if validports == True:
+                        nmap = aionmap.PortScanner()
+                        checks = True
                     else:
-                        await ctx.send("An error has occured")
-
-                elif scantype == "-PS":
-                    await ctx.send("This command may take a while, please wait for your results in your DMs")
-
-                    cmd = f"nmap -PS -oN {ip}_{ctx.author.name}.txt {ip}"
-                    await asyncio.create_subprocess_shell(
-                        cmd,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
-                    )
-                    filename = f"./{ip}_{ctx.author.name}.txt"
-                    check = False
-                    while check is False:
-                        if os.path.isfile(filename) is False:
-                            print("In process")
-                            time.sleep(10)
-                        else:
-                            if os.stat(filename).st_size != 0:
-                                check = True
-                    if check is True:
-                        await ctx.author.send("Here are your nmap scan results: ")
-                        await ctx.author.send(file=discord.File(filename))
-                        os.remove(filename)
-                    else:
-                        await ctx.send("An error has occured")
+                        checks = False
+                        await ctx.send("Invalid ports selected! Usage: ./nmap [scantype] [ip] (port)")
                 else:
-                    await ctx.send("Please enter a valid scan type: -sV, -sT, -PS")
+                    nmap = aionmap.PortScanner()
+                    checks = True
             else:
-                await ctx.send("Please enter a valid IP!")
+                checks = False
+        elif scantype == "options":
+            options = """```
+Usage: ./nmap [scantype] [ip] (port)
+Available scan types:
+    Service Detection (-sV)
+    TCP Connection Scan (-sT)
+
+Ports must be seperated by spaces or commas. "All ports" is not currently supported!
+            ```"""
+            await ctx.send(options)
+            checks = False
+        else:
+            await ctx.send("Please use one of the following scan types: -sT, -sV")
+
+        if checks is True:
+            scan_start = datetime.now()
+            if ports != "":
+                await ctx.send(f"Executing: nmap {scantype} {ip} -p {ports}, results will be sent to your DMs!")
+                results = await nmap_scan(scantype, ip, ports)
+            else:
+                await ctx.send(f"Executing: nmap {scantype} {ip}, results will be sent to your DMs!")
+                results = await nmap_scan(scantype, ip)
+            if isinstance(results, Exception):
+                await ctx.author.send(f"The bot encountered an error while trying to scan {ip}!")
+            else:
+                x = results.get_raw_data()
+                scaninfo = x['_scaninfo']
+                stats = x['_runstats']
+                finish = stats['finished']
+                host = x['_hosts']
+                hoststats = stats['hosts']
+                strtosend = f"""
+Scan started at: {results.startedstr}
+Nmap version: {results.version}
+{host[0]} (Total up: {hoststats['total']})
+
+Scan info:
+    Type: {scaninfo['type'].upper()}
+
+    Protocol: {scaninfo['protocol'].upper()}
+
+Total number of services {scaninfo['numservices']}
+
+services: \n{scaninfo['services']}
+
+Finish time: {finish['timestr']} (Elapsed: {finish['elapsed']})
+Requested by: {ctx.author.name}
+                """
+                filename = f"./scans/{results.started}_{ctx.author.id}.txt"
+                with open(filename, 'a') as f:
+                    f.write(strtosend)
+                f.close()
+                await ctx.author.send(file=discord.File(filename))
+                os.remove(filename)
 
     @nmapscan.error
     async def scan_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a scan type and IP")
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send("You are not whitelisted to use this command")
+            await ctx.send("Usage: ./nmap [scantype] [ip] (port)")
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f"The nmap command is on cooldown, please try again in: {error.retry_after:.2f}s")
         else:
             raise
-
-    @commands.command(name="bannergrabber", description="Grabs banner from an application, takes a list of ports seperated by commas", aliases=["bannergrab"])
-    async def bannergrabber(self, ctx, ip: str, *, ports: str):
-        hostname = socket.gethostname()
-        if ip == "127.0.0.1" or ip == "localhost" or ip == hostname:
-            await ctx.send("The bot will not scan itself")
-        else:
-            ports = ports.split(",")
-            ports = list(map(int, ports))
-            try:
-                ip = socket.gethostbyname(ip)
-                print(f"Connected to {ip}")
-            except:
-                await ctx.send("Unable to connect to IP")
-            embed = Embed(title="Banner grab: ",
-                         colour=discord.Colour.random())
-            threads = []
-            for port in ports:
-                t = threading.Thread(target=grab_banner, args=(ip, port))
-                t.start()
-                threads.append(t)
-
-            for thread in threads:
-                thread.join()
-
-            i = 0
-            for banner in banners:
-                if len(banner) == 0:
-                    banner = "Port responded but no banner given"
-                embed.add_field(name=f"{ip}:{ports[i]}", value=banner, inline=False)
-                i = i + 1
-            time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-            await ctx.send(embed=embed)
-
-    @bannergrabber.error
-    async def bannergrab_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter an IP and ports to check")
 
     @commands.command(name="msfvenom", description="Geneate msf payload, for payloads type ./msfvenom options", aliases=["msfpayload"])
     async def msfvenom(self, ctx, payload: str, ip = None, port = None):
@@ -308,15 +266,9 @@ Available payloads:
     linux/x32/shell/reverse_tcp
     Other payloads will be accepted in the same format and ouput as a txt```
                 """)
-
-        if port != None:
-            try:
-                port = int(port)
-                port_check = True
-            except ValueError:
-                await ctx.send("Invalid port passed!")
-        if port_check == True:
+        if validate_port(port) == True:
             if validate_ip(ip) is True:
+                port = int(port)
                 if 1 <= port <= 65535:
                     bad_chars = [';', ':', '!', '*', '#', '$', '(', ')']
                     payload = ''.join((filter(lambda i: i not in bad_chars, payload)))
@@ -342,9 +294,10 @@ Available payloads:
                         await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
                         os.remove(f"./payloads/{ctx.author.id}_payload.txt")
                 else:
-                    print("Please enter a valid port")
+                    print("Please enter a  valid IP address")
             else:
-                print("Please enter a  valid IP address")
+                print("Please enter a valid port")
+
 
     @msfvenom.error
     async def msfvenom_error(self, ctx, error):
