@@ -1,9 +1,12 @@
-import discord, random
+import discord, random, time, datetime, sys, platform, math
 from discord.ext import commands, tasks
 from itertools import cycle
 from discord import Colour, Embed
 from discord import AppInfo
-version = "Beta 1.0"
+from pygicord import Paginator
+
+start_time = time.time()
+version = "Alpha 3.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 
 class misc(commands.Cog):
@@ -48,27 +51,29 @@ Latency: {round(self.client.latency * 1000)} ms
 
     @commands.command(name="listofroles", description="Gives a list of roles", aliases=["roles", "serverroles"])
     async def listofroles(self, ctx):
+        def get_pages(pagescount, roles):
+            z = 1
+            pages = []
+            x = 1
+            for i in range(1, pagecount + 1):
+                embed = Embed(title=f"{ctx.message.guild.name} roles", colour=discord.Colour.random())
+                embed.set_footer(text=f"Page {x}/{pagecount}")
+                x += 1
+                print(x)
+                for role in roles[x - 2]:
+                    embed.add_field(name=f"#{z}", value=role.name)
+                    z += 1
+                pages.append(embed)
+            return pages
+
         roles = ctx.guild.roles
         roles.reverse()
         roles.pop(-1)
-        if len(roles) <= 25:
-            embed = Embed(title="List of roles: ",
-                          colour=discord.Colour.random())
+        roleslist = [roles[x:x+25] for x in range(0, len(roles), 25)]
+        pagecount = math.ceil(len(roles) / 25)
+        paginator = Paginator(pages=get_pages(pagecount, roleslist))
+        await paginator.start(ctx)
 
-            num = 1
-            for role in roles:
-                embed.add_field(name=f"Role #{num}", value=role, inline=False)
-                num += 1
-            time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-            await ctx.send(embed=embed)
-        else:
-            num = 1
-            RoleList = ""
-            for role in roles:
-                RoleList += f"#{num} {role}\n"
-                num += 1
-            await ctx.send(f"```{RoleList}```")
     @commands.command(name="credits", description="Info on the bot creator!", aliases=["owner", "creator", "credit"])
     async def credits(self, ctx):
         embed = Embed(title="Credits", colour=discord.Colour.dark_purple())
@@ -80,23 +85,27 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.set_footer(text="Feel free to check out my other projects on Github!\nAll donations are appreciated and support the bot, as well as other projects!")
         await ctx.send(embed=embed)
 
-    @commands.command(name="invite", description="Returns invite link", aliases=["inv", "botinvite"])
-    async def invite(self, ctx):
-        embed = Embed(title="CyberSecurity Bot", colour=discord.Colour.random())
+    @commands.command(name="stats", description="Bot statistics", aliases=["statistics", "botstats"])
+    async def stats(self, ctx):
+        current_time = time.time()
+        difference = int(round(current_time - start_time))
+        text = str(datetime.timedelta(seconds=difference))
+        embed=Embed(title=f"{self.client.user} stats",
+                    colour=discord.Colour.random())
         embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.add_field(name="Shortened link: ", value="[Shortened](https://bit.ly/3fGmftl)", inline=False)
-        embed.add_field(name="Full link: ", value="[Full](https://discord.com/api/oauth2/authorize?client_id=766312320589627463&permissions=8&scope=bot)", inline=False)
-        time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-        await ctx.send(embed = embed)
-
-    @commands.command(name="top.gg", description="Top.gg link", aliases=["topgg", "top"])
-    async def topgg(self, ctx):
-        embed = Embed(title="top.gg")
-        embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.add_field(name="Link: ", value="[CyberSecurity Bot](https://top.gg/bot/766312320589627463)")
-        time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+        embed.add_field(name="Uptime: ", value=text, inline=False)
+        embed.add_field(name="Number of servces: ", value=len(self.client.guilds), inline=False)
+        embed.add_field(name="Online users: ", value=str(len({m.id for m in self.client.get_all_members() if m.status is not discord.Status.offline})), inline=False)
+        embed.add_field(name="Total users: ", value=len(self.client.users), inline=False)
+        embed.add_field(name="Total channels: ", value=sum(1 for g in self.client.guilds for _ in g.channels), inline=False)
+        cached = sum(1 for m in self.client.cached_messages)
+        if cached == 1000:
+            cached = "Max"
+        embed.add_field(name="Number of cached messages (in this server): ", value=cached, inline = False)
+        embed.add_field(name="OS: ", value=platform.platform(), inline=False)
+        embed.add_field(name="Python version: ", value=sys.version, inline = False)
+        mtime = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 def setup(client):
     client.add_cog(misc(client))
