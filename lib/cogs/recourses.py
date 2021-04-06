@@ -91,8 +91,5 @@ class recourses(commands.Cog):
         await paginator.start(ctx)
 
 
-    @commands.command(name="ProgrammingRecourses")
-
-        
 def setup(client):
     client.add_cog(recourses(client))
