@@ -1,4 +1,4 @@
-import discord, random, time, datetime, sys, platform, math
+import discord, random, time, datetime, sys, platform, math, psutil, os
 from discord.ext import commands, tasks
 from itertools import cycle
 from discord import Colour, Embed
@@ -94,16 +94,20 @@ Latency: {round(self.client.latency * 1000)} ms
                     colour=discord.Colour.random())
         embed.set_thumbnail(url=self.client.user.avatar_url)
         embed.add_field(name="Uptime: ", value=text, inline=False)
-        embed.add_field(name="Number of servces: ", value=len(self.client.guilds), inline=False)
+        embed.add_field(name="Number of servers: ", value=len(self.client.guilds), inline=False)
         embed.add_field(name="Online users: ", value=str(len({m.id for m in self.client.get_all_members() if m.status is not discord.Status.offline})), inline=False)
         embed.add_field(name="Total users: ", value=len(self.client.users), inline=False)
         embed.add_field(name="Total channels: ", value=sum(1 for g in self.client.guilds for _ in g.channels), inline=False)
         cached = sum(1 for m in self.client.cached_messages)
         if cached == 1000:
             cached = "Max"
-        embed.add_field(name="Number of cached messages (in this server): ", value=cached, inline = False)
+        embed.add_field(name="Number of cached messages: ", value=cached, inline = False)
         embed.add_field(name="OS: ", value=platform.platform(), inline=False)
+        process = psutil.Process(os.getpid())
+        embed.add_field(name="Memory usage: ", value=process.memory_info()[0] / float(2 ** 20), inline=False)
+        embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
         embed.add_field(name="Python version: ", value=sys.version, inline = False)
+        embed.add_field(name="Discord.py version: ", value=discord.__version__)
         mtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
