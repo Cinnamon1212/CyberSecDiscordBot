@@ -24,7 +24,7 @@ class help(commands.Cog):
     async def help(self, ctx):
         menu = PaginatedMenu(ctx)
 
-        page1 = Page(title="Comamnd help", colour=discord.Colour.random())
+        page1 = Page(title="Command help", colour=discord.Colour.random())
         page1.add_field(name="Utility tools: ", value="Networking, website and hacking tools", inline=False)
         page1.add_field(name="Recourses: ", value="A list of programming and hacking recourses", inline=False)
         page1.add_field(name="AI: ", value="Commands using AI")
