@@ -8,7 +8,7 @@ class recourses(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(name="OSRecourses", description="OS support", aliases=["OS"])
+    @commands.command(name="OSRecourses", description="OS support and recommendations", aliases=["OS"])
     async def OS(self, ctx):
         pages = []
         main = Embed(title="OS Suggestions and recourses", colour=discord.Colour.random())
@@ -87,6 +87,75 @@ class recourses(commands.Cog):
         funos.add_field(name="[Red Star OS](https://archiveos.org/redstar/)", value="Red star OS/North Korean OS is a Linux based OS developed by KCC featuring a modified version of Firefox called Naenara for browsing 'Kwangmyong'", inline=False)
         funos.set_footer(text=f"Please use the 🔢 button to jump to a page (page 7 out of 7)")
         pages.append(funos)
+        paginator = Paginator(pages=pages)
+        await paginator.start(ctx)
+
+
+    @commands.command(name="ProgrammingRecourses", description="Programming support", aliases=["ProgRecourses", "programming"])
+    async def ProgRecourses(self, ctx):
+        pages = []
+
+        main = Embed(title="Programming Recourses", colour=discord.Colour.random())
+        main.add_field(name="```(1) Python```", value="⠀", inline=False)
+        main.add_field(name="```(2) C Family```", value="⠀", inline=False)
+        main.add_field(name="```(3) Java```", value="⠀", inline=False)
+        main.add_field(name="```(4) Go ```", value="⠀", inline=False)
+        main.add_field(name="```(5) Swift```", value="⠀", inline=False)
+        main.add_field(name="```(6) Web development + databases```", value="⠀", inline=False)
+        main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 6)")
+        pages.append(main)
+
+        python = Embed(title="Python Recourses", colour=discord.Colour.random())
+        python.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/768px-Python-logo-notext.svg.png")
+        python.add_field(name="Python website", value="https://www.python.org/", inline=False)
+        python.add_field(name="Learn python", value="https://www.learnpython.org/", inline=False)
+        python.add_field(name="W3Schools", value="https://www.w3schools.com/python/default.asp", inline=False)
+        python.add_field(name="Violent python", value="[Amazon link](https://www.amazon.co.uk/Violent-Python-Cookbook-Penetration-Engineers/dp/1597499579)", inline=False)
+        python.add_field(name="Tensorflow with python", value="[Google play](https://play.google.com/store/books/details?pcampaignid=books_read_action&id=3_rEDwAAQBAJ)", inline=False)
+        python.add_field(name="Web apps with python", value="https://realpython.com/python-web-applications/", inline=False)
+        python.add_field(name="Discord.py", value="https://discordpy.readthedocs.io/en/latest/index.html#getting-started", inline=False)
+        python.set_footer(text=f"Please use the 🔢 button to jump to a page (page 2 out of 6)")
+        pages.append(python)
+
+        cfamily = Embed(title="C family recourses", colour=discord.Colour.random())
+        cfamily.set_thumbnail(url="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/106186202/original/838192fff0216caf59ce6571211694c39ed7e328/do-programming-work-of-c-family-language-accurately.jpg")
+        cfamily.add_field(name="C family list", value="https://en.wikipedia.org/wiki/List_of_C-family_programming_languages", inline=False)
+        cfamily.add_field(name="Learn C", value="https://www.learn-c.org/", inline=False)
+        cfamily.add_field(name="Learn C#", value="https://www.learncs.org/", inline=False)
+        cfamily.add_field(name="Learn C++", value="https://www.learn-cpp.org/", inline=False)
+        cfamily.add_field(name="C board forums", value="https://cboard.cprogramming.com/", inline=False)
+        cfamily.set_footer(text=f"Please use the 🔢 button to jump to a page (page 3 out of 6)")
+        pages.append(cfamily)
+
+        java = Embed(title="Java recourses", colour=discord.Colour.random())
+        java.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/en/thumb/3/30/Java_programming_language_logo.svg/1200px-Java_programming_language_logo.svg.png")
+        java.add_field(name="Java website", value="https://www.java.com/", inline=False)
+        java.add_field(name="W3Schools java", value="https://www.w3schools.com/java/", inline=False)
+        java.add_field(name="Android apps with Java", value="https://developer.android.com/codelabs/build-your-first-android-app", inline=False)
+        java.add_field(name="Java forum", value="https://community.oracle.com/community/java", inline=False)
+        java.set_footer(text=f"Please use the 🔢 button to jump to a page (page 4 out of 6)")
+        pages.append(java)
+
+        go = Embed(title="Go recourses", colour=discord.Colour.random())
+        go.set_thumbnail(url="https://sdtimes.com/wp-content/uploads/2018/02/golang.sh_-490x490.png")
+        go.add_field(name="Go lang wiki", value="https://golang.org/doc/articles/wiki/", inline=False)
+        go.add_field(name="Go lang forums", value="https://forums.online-go.com/?utm_source=devglan", inline=False)
+        go.add_field(name="Learn Go lang", value="https://www.codecademy.com/learn/learn-go", inline=False)
+        go.set_footer(text=f"Please use the 🔢 button to jump to a page (page 5 out of 6)")
+        pages.append(go)
+
+        web = Embed(title="Web development and databases recourses", colour=discord.Colour.random())
+        web.set_thumbnail(url="https://www.pngfind.com/pngs/m/170-1706361_web-development-icon-web-development-logo-png-transparent.png")
+        web.add_field(name="W3Schools", value="https://www.w3schools.com/", inline=False)
+        web.add_field(name="Learn HTML and CSS", value="https://www.codecademy.com/catalog/language/html-css", inline=False)
+        web.add_field(name="Learn PHP", value="https://www.learn-php.org/", inline=False)
+        web.add_field(name="Learn JavaScript", value="https://www.learn-js.org/", inline=False)
+        web.add_field(name="Learn SQL", value="https://www.codecademy.com/learn/learn-sql", inline=False)
+        web.add_field(name="Database implementation", value="https://stackoverflow.com/questions/13177882/implementing-a-database-how-to-get-started", inline=False)
+        web.add_field(name="Mongo DB", value="https://www.mongodb.com/", inline=False)
+        web.set_footer(text=f"Please use the 🔢 button to jump to a page (page 6 out of 6)")
+        pages.append(web)
+
         paginator = Paginator(pages=pages)
         await paginator.start(ctx)
 
