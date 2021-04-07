@@ -104,7 +104,7 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Number of cached messages: ", value=cached, inline = False)
         embed.add_field(name="OS: ", value=platform.platform(), inline=False)
         process = psutil.Process(os.getpid())
-        embed.add_field(name="Memory usage: ", value=process.memory_info()[0] / float(2 ** 20), inline=False)
+        embed.add_field(name="Memory usage: ", value=f"{round(process.memory_info().rss / 1024 ** 2, 2)} Mbs", inline=False)
         embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
         embed.add_field(name="Python version: ", value=sys.version, inline = False)
         embed.add_field(name="Discord.py version: ", value=discord.__version__)
