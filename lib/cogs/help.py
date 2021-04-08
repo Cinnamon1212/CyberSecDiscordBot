@@ -136,15 +136,23 @@ class help(commands.Cog):
                 continue
             page10.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page11 = Page(title="Misc", description="Bot information or commands without catergory", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("misc").walk_commands():
+        page11 = Page(title="Math", description="Math utils", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("maths").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page11.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        pages = [page1, page2, page3, page4, page5, page6, page7, page8, page9, page10, page11]
+        page12 = Page(title="Misc", description="Bot information or commands without catergory", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("misc").walk_commands():
+            if command.hidden:
+                continue
+            elif command.parent is not None:
+                continue
+            page12.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            pages = [page1, page2, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12]
+
         menu.add_pages(pages)
         menu.set_timeout(180)
         menu.show_skip_buttons()
