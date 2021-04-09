@@ -17,9 +17,9 @@ Changelog:
 * Updated clear command (allows clear by ID)
 * Added OS and programming recourses
 
-Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)
-Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)
-
+Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
+Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
+  
 Please contact me via [Github](https://github.com/Cinnamon1212/) or [Cinnamon#7617](https://discord.com/users/292382410530750466/) on discord for with concerns or queries
 
 Feel free to check out my other repos:  
