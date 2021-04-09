@@ -1,6 +1,6 @@
 # CyberSecDiscordBot
 
-A cyber security discord bot with some GP commands using different APIs, commands and discord.py
+A cyber security discord bot with featuring networking, hacking and website utils, maths, cryptography and much more!
 
 To Do list:  
 * Create usage string for all commands (Usage ./(command) [required] (optional)
