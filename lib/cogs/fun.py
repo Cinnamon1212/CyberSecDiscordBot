@@ -1,7 +1,12 @@
-import discord, random, re
+import discord, random, re, json, lyricsgenius
 from discord import Embed
 from discord.ext import commands
 from aiohttp import request
+
+with open('secrets.json', 'r') as secrets:
+    data = secrets.read()
+secrets = json.loads(data)
+geniustoken = secrets['genius']
 
 def clean_string(string):
     string = re.sub('@', '@\u200b', string)
@@ -136,6 +141,39 @@ class fun(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter an animal out of: Dog, cat, panda, fox, bird and koala. ")
 
+    @commands.command("lyrics", description="Searches genius for song lyrics", aliases=["genius"])
+    async def lyrics(self, ctx, *, song: str):
+        genius = lyricsgenius.Genius(geniustoken)
+        song = genius.search_song(song)
+        try:
+            if len(song.lyrics) < 2000:
+                await ctx.send(f"```{song.lyrics}```")
+            else:
+                filename = f"{song.id}_{ctx.author.id}.txt"
+                with open(filename, "x") as f:
+                    f.writelines(song.lyrics)
+                f.close()
+                await ctx.send("Here are the song lyrics: ")
+                await ctx.send(file=discord.File(filename))
+                os.remove(filename)
+        except HTTPError as e:
+            await ctx.send(f"Unable to fetch lyrics for {song}")
+            print(e.errno)
+            print(e.args[0])
+            print(e.args[1])
+        except AttributeError as e:
+            print(e)
+            await ctx.send(f"Could not fetch lyrics for {song}")
+        except Timeout:
+            await ctx.send("Lyrics command timed out")
+
+
+    @lyrics.error
+    async def lyrics_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please enter a song name")
+        else:
+            print(error)
 
 def setup(client):
     client.add_cog(fun(client))
