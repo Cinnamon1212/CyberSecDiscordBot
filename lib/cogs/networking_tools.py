@@ -46,6 +46,13 @@ async def ping_f(ip, count):
     output = str(stdout, 'utf-8')
     return output
 
+async def dig_f(ip):
+    args = f"dig {ip}"
+    cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await cmd.communicate()
+    output = str(stdout, 'utf-8')
+    return output
+
 async def nmap_scan(scantype, ip, ports=""):
     scanner = aionmap.PortScanner()
     if ports != "":
@@ -99,7 +106,7 @@ class networkingtools(commands.Cog):
             await ctx.send(f"```{text}```")
         else:
             if validate_ip(DNS) is True:
-                output = os.popen(f"dig {DNS}").read()
+                output = await dig_f(DNS)
                 await ctx.send(f"```\n{output}```")
             elif validate_ip(DNS) is False:
                 await ctx.send(f"```Invalid host provided\n{text}```")
@@ -238,7 +245,7 @@ Requested by: {ctx.author.name}
             raise
 
     @commands.command(name="msfvenom", description="Geneate msf payload, for payloads type ./msfvenom options", aliases=["msfpayload"])
-    async def msfvenom(self, ctx, payload: str, ip = None, port = None):
+    async def msfvenom(self, ctx, payload: str, ip=None, port=None):
 
         if payload == "options":
             await ctx.send("""```accesslog
