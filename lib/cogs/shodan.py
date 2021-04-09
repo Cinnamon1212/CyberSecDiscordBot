@@ -8,17 +8,31 @@ shodanapikey = json.loads(data)
 apikey = shodanapikey['shodankey']
 api = shodan.Shodan(apikey)
 
+
 def validate_ip(s):
-    a = s.split('.')
-    if len(a) != 4:
-        return False
-    for x in a:
-        if not x.isdigit():
+    if s is not None:
+        restricted = ["192.16", "173.16", "172.31", "127.0."]
+        a = s.split('.')
+        if len(a) != 4:
             return False
-        i = int(x)
-        if i < 0 or i > 255:
+        for x in a:
+            if not x.isdigit():
+                return False
+            i = int(x)
+            if i < 0 or i > 255:
+                return False
+        firstsix = s[0:6]
+        print(firstsix)
+        check = any(r in firstsix for r in restricted)
+        print(check)
+        if check is True:
             return False
-    return True
+        else:
+            if s[2] == "10":
+                return False
+            else:
+                return True
+
 
 class shodan(commands.Cog):
     def __init__(self, client):
