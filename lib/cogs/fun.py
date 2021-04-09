@@ -110,7 +110,8 @@ class fun(commands.Cog):
 
     async def animal_fact(self, ctx, animal: str):
         """ Available animals: Dog, cat, panda, fox, bird and koala. """
-        if (animal := animal.lower()) in ("dog", "cat", "panda", "fox", "bird", "koala"):
+        animal = animal.lower()
+        if animal in ("dog", "cat", "panda", "fox", "bird", "koala"):
             URL = f"https://some-random-api.ml/facts/{animal}"
             image_link = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
             async with request("GET", image_link, headers={}) as response:
