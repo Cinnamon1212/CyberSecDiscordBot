@@ -84,68 +84,60 @@ class help(commands.Cog):
                 continue
             page5.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page6 = Page(title="Music", description="Music commands and song lyrics", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("music").walk_commands():
+        page6 = Page(title="Administration", description="General administration commands", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("admin").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page6.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page7 = Page(title="Administration", description="General administration commands", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("admin").walk_commands():
+        page7 = Page(title="Maths", description="Various maths commands", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("maths").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page7.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page8 = Page(title="Maths", description="Various maths commands", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("maths").walk_commands():
+        page8 = Page(title="Fun pt1", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("fun").walk_commands():
+            if command.hidden:
+                continue
+            elif command.parent is not None:
+                continue
+            page8.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        for command in self.client.get_cog("minecraft").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page8.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page9 = Page(title="Fun pt1", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("fun").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page9.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        for command in self.client.get_cog("minecraft").walk_commands():
+        page9 = Page(title="Fun pt2", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("reddit_commands").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page9.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page10 = Page(title="Fun pt2", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("reddit_commands").walk_commands():
+        page10 = Page(title="Math", description="Math utils", inline=False, colour=discord.Colour.random())
+        for command in self.client.get_cog("maths").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
             page10.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
-        page11 = Page(title="Math", description="Math utils", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("maths").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page11.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-
-        page12 = Page(title="Misc", description="Bot information or commands without catergory", inline=False, colour=discord.Colour.random())
+        page11 = Page(title="Misc", description="Bot information or commands without catergory", inline=False, colour=discord.Colour.random())
         for command in self.client.get_cog("misc").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page12.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-            pages = [page1, page2, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12]
+            page11.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            pages = [page1, page2, page3, page4, page5, page6, page7, page8, page9, page10, page11]
 
         menu.add_pages(pages)
         menu.set_timeout(180)
