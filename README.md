@@ -2,7 +2,6 @@
 
 A cyber security discord bot with some GP commands using different APIs, commands and discord.py
 
-Please feel free to host this bot yourself and send me a message on [![Cinnamon#7617](https://img.shields.io/badge/Discord-Cinnamon%237617-blue?style=plastic&logo=discord.svg)](https://discord.com/)   
 To Do list:  
 * Create usage string for all commands (Usage ./(command) [required] (optional)
 * Add more network utilities
@@ -19,8 +18,9 @@ Changelog:
 * Added OS and programming recourses
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)
-
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)
+
+Please contact me via [Github](https://github.com/Cinnamon1212/) or [Cinnamon#7617](https://discord.com/users/292382410530750466/) on discord for with concerns or queries
 
 Feel free to check out my other repos:  
 * [LAN Pwning Toolkit](https://github.com/Cinnamon1212/LAN_Pwning_Toolkit)
