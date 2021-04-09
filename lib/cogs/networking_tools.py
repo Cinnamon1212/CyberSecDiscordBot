@@ -1,4 +1,5 @@
 import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio
+from socket import gaierror
 from datetime import datetime
 from discord import Embed, colour
 from discord.ext import commands
@@ -105,13 +106,20 @@ class networkingtools(commands.Cog):
         if DNS == "":
             await ctx.send(f"```{text}```")
         else:
-            if validate_ip(DNS) is True:
-                output = await dig_f(DNS)
-                await ctx.send(f"```\n{output}```")
-            elif validate_ip(DNS) is False:
-                await ctx.send(f"```Invalid host provided\n{text}```")
-            else:
-                await ctx.send(f"```Unable to validate DNS\n{text}```")
+            try:
+                ip = socket.gethostbyname(DNS)
+                check = True
+            except gaierror:
+                await ctx.send(f"```Unable to associate address to DNS\n{text}```")
+                check = False
+            if check is True:
+                if validate_ip(ip) is True:
+                    output = await dig_f(DNS)
+                    await ctx.send(f"```\n{output}```")
+                elif validate_ip(DNS) is False:
+                    await ctx.send(f"```Invalid host provided\n{text}```")
+                else:
+                    await ctx.send(f"```Unable to validate DNS\n{text}```")
 
     @commands.command(name="passgen", description="generates a number of passwords with a given length", aliases=["passwordgenerator", "password"])
     async def passwords(self, ctx, number: int, length: int):
