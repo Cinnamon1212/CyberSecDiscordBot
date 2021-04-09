@@ -5,7 +5,8 @@ from discord.ext import commands
 from aiohttp import request
 
 def validate_ip(s):
-    if s != None:
+    if s is not None:
+        restricted = ["192.16", "173.16", "172.31", "127.0."]
         a = s.split('.')
         if len(a) != 4:
             return False
@@ -15,9 +16,17 @@ def validate_ip(s):
             i = int(x)
             if i < 0 or i > 255:
                 return False
-    else:
-        return False
-    return True
+        firstsix = s[0:6]
+        print(firstsix)
+        check = any(r in firstsix for r in restricted)
+        print(check)
+        if check is True:
+            return False
+        else:
+            if s[2] == "10":
+                return False
+            else:
+                return True
 
 def validate_port(s):
     try:
@@ -150,9 +159,11 @@ class networkingtools(commands.Cog):
 
     @commands.command(name="nmap", description="Performs basic scans using the nmap. The bot will be paused while this runs! ")
     @commands.cooldown(2, 30, commands.BucketType.user)
-    async def nmapscan(self, ctx, scantype: str, ip = None , *, ports = "" ):
+    async def nmapscan(self, ctx, scantype: str, ip=None, *, ports=""):
+        text = "Usage: ./nmap [scantype] [ip] (port)\nAvailable scan types: -sT, -sV"
         scan_types = ['-PS', '-sT', '-sV']
         if scantype in scan_types:
+            ip = socket.gethostbyname(ip)
             if validate_ip(ip) is True:
                 if ports != "":
                     if "," in ports:
@@ -163,29 +174,18 @@ class networkingtools(commands.Cog):
                         if validate_port(port):
                             validports = True
                     if validports is True:
-                        nmap = aionmap.PortScanner()
                         checks = True
                     else:
                         checks = False
-                        await ctx.send("Invalid ports selected! Usage: ./nmap [scantype] [ip] (port)")
+                        await ctx.send(f"```Invalid ports selected!\n{text}```")
                 else:
-                    nmap = aionmap.PortScanner()
                     checks = True
             else:
                 checks = False
-        elif scantype == "options":
-            options = """```
-Usage: ./nmap [scantype] [ip] (port)
-Available scan types:
-    Service Detection (-sV)
-    TCP Connection Scan (-sT)
-
-Ports must be seperated by spaces or commas. "All ports" is not currently supported!
-            ```"""
-            await ctx.send(options)
-            checks = False
+                await ctx.send(f"```{text}```")
         else:
-            await ctx.send("Please use one of the following scan types: -sT, -sV")
+            await ctx.send(f"```{text}```")
+            checks = False
 
         if checks is True:
             scan_start = datetime.now()
