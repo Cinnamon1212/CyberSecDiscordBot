@@ -1,7 +1,7 @@
 import discord, math, re
 from discord.ext import commands
 from discord import Embed
-from dpymenus import Page, PaginatedMenu
+from pygicord import Paginator
 
 def syntax(command):
     cmd_and_aliases = "|".join([str(command), *command.aliases])
@@ -9,7 +9,7 @@ def syntax(command):
 
     for key, value in command.params.items():
         if key not in ("self", "ctx"):
-            params.append(f"[{key}]" if "NoneType" in str(value) else f"<{key}>")
+            params.append(f"({key})" if "NoneType" in str(value) else f"[{key}]")
 
     params = " ".join(params)
     return f"`{cmd_and_aliases} {params}`"
@@ -22,139 +22,130 @@ class help(commands.Cog):
     @commands.command(name="help", aliases=["commands", "h"], description="Displays this command")
     @commands.bot_has_permissions(manage_messages=True)
     async def help(self, ctx):
-        menu = PaginatedMenu(ctx)
+        pages = []
+        main = Embed(title="Command help", colour=discord.Colour.random())
+        main.add_field(name="```(1) Main```", value="Main page", inline=False)
+        main.add_field(name="```(2) Network and hacking utilities```", value="Networking and hacking utilities", inline=False)
+        main.add_field(name="```(3) Website and cryptography utlities```", value="Website and encoding utilities")
+        main.add_field(name="```(4) Recourses```", value="A list of programming and hacking recourses", inline=False)
+        main.add_field(name="```(5) AI```", value="Commands using AI")
+        main.add_field(name="```(6) Administration```", value="General administration commands", inline=False)
+        main.add_field(name="```(7) Maths```", value="Math utilities", inline=False)
+        main.add_field(name="```(8) Fun```", value="Fun and off-topic commands", inline=False)
+        main.add_field(name="```(9) Misc```", value="Bot information and commands without a category", inline=False)
+        main.set_footer(text="Please use the 🔢 button to jump to a page (page 1 out of 9)")
+        pages.append(main)
 
-        page1 = Page(title="Command help", colour=discord.Colour.random())
-        page1.add_field(name="Utility tools: ", value="Networking, website and hacking tools", inline=False)
-        page1.add_field(name="Recourses: ", value="A list of programming and hacking recourses", inline=False)
-        page1.add_field(name="AI: ", value="Commands using AI")
-        page1.add_field(name="Music: ", value="Music commands and song lyrics", inline=False)
-        page1.add_field(name="Administration: ", value="General administration commands", inline=False)
-        page1.add_field(name="Maths: ", value="Various maths commands", inline=False)
-        page1.add_field(name="Fun: ", value="Fun and off-topic commands", inline=False)
-        page1.add_field(name="Misc: ", value="Bot information or commands without category", inline=False)
-
-        page2 = Page(title="Utility tools pt1", description = "Networking and hacking tools", inline=False, colour=discord.Colour.random())
+        utils = Embed(title="Networking and hacking utilities", colour=discord.Colour.random())
         for command in self.client.get_cog("networkingtools").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page2.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                utils.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
         for command in self.client.get_cog("shodan").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page2.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                utils.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        utils.set_footer(text="Please use the 🔢 button to jump to a page (page 2 out of 9)")
+        pages.append(utils)
 
-        page3 = Page(title="Utility tools pt2", description = "Website and cryptography tools", inline=False, colour=discord.Colour.random())
+        web = Embed(title="Website and cryptography utilities", colour=discord.Colour.random())
         for command in self.client.get_cog("websites").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page3.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                web.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        web.set_footer(text="Please use the 🔢 button to jump to a page (page 3 out of 9)")
         for command in self.client.get_cog("encoding").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page3.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                web.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        pages.append(web)
 
-        page4 = Page(title="AI", description="Commands using AI", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("AI").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page4.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-
-        page5 = Page(title="Recourses", description="A list of programming and hacking recourses", inline=False, colour=discord.Colour.random())
+        recourses = Embed(title="Recourses", colour=discord.Colour.random())
         for command in self.client.get_cog("recourses").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page5.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                recourses.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
         for command in self.client.get_cog("googleapi").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page5.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                recourses.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        recourses.set_footer(text="Please use the 🔢 button to jump to a page (page 4 out of 9)")
+        pages.append(recourses)
 
-        page6 = Page(title="Administration", description="General administration commands", inline=False, colour=discord.Colour.random())
+        AI = Embed(title="Commands using AI", colour=discord.Colour.random())
+        for command in self.client.get_cog("AI").walk_commands():
+            if command.hidden:
+                continue
+            elif command.parent is not None:
+                continue
+            else:
+                AI.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        AI.set_footer(text="Please use the 🔢 button to jump to a page (page 5 out of 9)")
+        pages.append(AI)
+
+        admin = Embed(title="General administration commands", colour=discord.Colour.random())
         for command in self.client.get_cog("admin").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page6.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                admin.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        admin.set_footer(text="Please use the 🔢 button to jump to a page (page 6 out of 9)")
+        pages.append(admin)
 
-        page7 = Page(title="Maths", description="Various maths commands", inline=False, colour=discord.Colour.random())
+        maths = Embed(title="Math utilities", colour=discord.Colour.random())
         for command in self.client.get_cog("maths").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page7.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                maths.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        maths.set_footer(text="Please use the 🔢 button to jump to a page (page 7 out of 9)")
+        pages.append(maths)
 
-        page8 = Page(title="Fun pt1", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
+        fun = Embed(title="Fun and off-topic commands", colour=discord.Colour.random())
         for command in self.client.get_cog("fun").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page8.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        for command in self.client.get_cog("minecraft").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page8.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+            else:
+                fun.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        fun.set_footer(text="Please use the 🔢 button to jump to a page (page 8 out of 9)")
+        pages.append(fun)
 
-        page9 = Page(title="Fun pt2", description="Fun and off-topic commands", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("reddit_commands").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page9.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-
-        page10 = Page(title="Math", description="Math utils", inline=False, colour=discord.Colour.random())
-        for command in self.client.get_cog("maths").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page10.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-
-        page11 = Page(title="Misc", description="Bot information or commands without catergory", inline=False, colour=discord.Colour.random())
+        misc = Embed(title="Bot information and commands without a category", colour=discord.Colour.random())
         for command in self.client.get_cog("misc").walk_commands():
             if command.hidden:
                 continue
             elif command.parent is not None:
                 continue
-            page11.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-            pages = [page1, page2, page3, page4, page5, page6, page7, page8, page9, page10, page11]
+            else:
+                misc.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
+        misc.set_footer(text="Please use the 🔢 button to jump to a page (page 9 out of 9)")
+        pages.append(misc)
 
-        menu.add_pages(pages)
-        menu.set_timeout(180)
-        menu.show_skip_buttons()
-        menu.show_page_numbers()
-
-        await menu.open()
-
-    @help.error
-    async def help_error(self, ctx, error):
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("Bot is missing the manage messages permission")
-        else:
-            raise
-
-
-
-
+        paginator = Paginator(pages=pages)
+        await paginator.start(ctx)
 def setup(client):
     client.add_cog(help(client))
