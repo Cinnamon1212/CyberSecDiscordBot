@@ -1,4 +1,4 @@
-import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re
+import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio
 from datetime import datetime
 from discord import Embed, colour
 from discord.ext import commands
@@ -30,7 +30,14 @@ def validate_port(s):
     else:
         return False
 
-async def nmap_scan(scantype, ip, ports = ""):
+async def ping_f(ip, count):
+    args = f"ping -c {count} {ip}"
+    cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await cmd.communicate()
+    output = str(stdout, 'utf-8')
+    return output
+
+async def nmap_scan(scantype, ip, ports=""):
     scanner = aionmap.PortScanner()
     if ports != "":
         if "," not in ports:
@@ -77,26 +84,18 @@ class networkingtools(commands.Cog):
                     print(f" API returned {response.status}")
 
     @commands.command(name="dig", description="Dig comamnd, takes a domain or IP")
-    async def dig(self, ctx, DNS: str):
-        DNS = socket.gethostbyname(DNS)
-        if validate_ip(DNS) is True:
-            output = os.popen("dig " + DNS).read()
-            await ctx.send(f"```\n {output}```")
-        elif validate_ip(DNS) is False:
-            await ctx.send("The DNS gave an invalid IP")
+    async def dig(self, ctx, DNS=""):
+        text = "Usage: ./dig [DNS]"
+        if DNS == "":
+            await ctx.send(f"```{text}```")
         else:
-            await ctx.send("Unable to validate DNS")
-
-    @dig.error
-    async def DNS_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter an IP or Domain to dig")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please enter an IP or Domain")
-        elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("Please ensure you enter a valid domain or IP!")
-        else:
-            raise
+            if validate_ip(DNS) is True:
+                output = os.popen(f"dig {DNS}").read()
+                await ctx.send(f"```\n{output}```")
+            elif validate_ip(DNS) is False:
+                await ctx.send(f"```Invalid host provided\n{text}```")
+            else:
+                await ctx.send(f"```Unable to validate DNS\n{text}```")
 
     @commands.command(name="passgen", description="generates a number of passwords with a given length", aliases=["passwordgenerator", "password"])
     async def passwords(self, ctx, number: int, length: int):
@@ -134,30 +133,19 @@ class networkingtools(commands.Cog):
             raise
 
     @commands.command(name="ping", description="Pings any provided IP")
-    async def ping(self, ctx, count: int, ip: str):
+    async def ping(self, ctx, ip: str = "", count: int = 3):
+        text = "Usage: ./ping {ip} {count}\nMax count is 10"
         ip = socket.gethostbyname(ip)
         if validate_ip(ip) is True:
             if count <= 10:
-                output = subprocess.getoutput(f"ping -c {count} {ip} #")
+                output = await ping_f(ip, count)
                 await ctx.send(f"```{output}```")
             else:
-                await ctx.send("You may only have up to 10 ping requests")
-        elif validate_ip(ip) is False:
-            await ctx.send("Please enter a valid IP address")
-
+                await ctx.send(f"```You may only have up to 10 ping requests\n{text}```")
         else:
-            await ctx.send("Unable to validate IP")
+            await ctx.send(f"```Please enter a valid IP address\n{text}```")
 
-    @ping.error
-    async def ping_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter the number of pings and the IP")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please ensure the number of pings is an integer")
-        elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("Please ensure you enter a valid IP address!")
-        else:
-            raise
+
 
 
     @commands.command(name="nmap", description="Performs basic scans using the nmap. The bot will be paused while this runs! ")
@@ -165,11 +153,7 @@ class networkingtools(commands.Cog):
     async def nmapscan(self, ctx, scantype: str, ip = None , *, ports = "" ):
         scan_types = ['-PS', '-sT', '-sV']
         if scantype in scan_types:
-            try:
-                ip = socket.gethostbyname(ip)
-            except TypeError:
-                await ctx.send("Please enter an IP! Usage: ./nmap [scantype] [ip] (port)")
-            if validate_ip(ip):
+            if validate_ip(ip) is True:
                 if ports != "":
                     if "," in ports:
                         a = ports.split(",")
@@ -178,7 +162,7 @@ class networkingtools(commands.Cog):
                     for port in a:
                         if validate_port(port):
                             validports = True
-                    if validports == True:
+                    if validports is True:
                         nmap = aionmap.PortScanner()
                         checks = True
                     else:
@@ -247,7 +231,7 @@ Requested by: {ctx.author.name}
     @nmapscan.error
     async def scan_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Usage: ./nmap [scantype] [ip] (port)")
+            await ctx.send("```Usage: ./nmap [scantype] [ip] (port)```")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f"The nmap command is on cooldown, please try again in: {error.retry_after:.2f}s")
         else:
@@ -266,7 +250,7 @@ Available payloads:
     linux/x32/shell/reverse_tcp
     Other payloads will be accepted in the same format and ouput as a txt```
                 """)
-        if validate_port(port) == True:
+        if validate_port(port) is True:
             if validate_ip(ip) is True:
                 port = int(port)
                 if 1 <= port <= 65535:
