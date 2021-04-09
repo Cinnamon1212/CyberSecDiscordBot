@@ -4,10 +4,11 @@ A cyber security discord bot with some GP commands using different APIs, command
 
 To Do list:  
 * Create usage string for all commands (Usage ./(command) [required] (optional)
-* Add more network utilities
-* Add more web page ulities
-* Redo help command
+* Add more network utilities (Banner grabbing, more nmap scan types, capture file analysis)
+* Add more cryptography tools (more hashes, encoding, morse code, etc)
+* Add more web page ulities (url shortener)
 * Add AI chat bot
+* Add more admin commands (back up, channel purge)
 * Tidy code/Remove clutter
 
 Changelog:
@@ -15,7 +16,8 @@ Changelog:
 * Replace old nmap with aionmap (prevent blocking)
 * Replaced ping subprocess with asyncio subprocess (prevent blocking)
 * Updated clear command (allows clear by ID)
-* Added OS and programming recourses
+* Removed covid cog
+* Replaced help command (using pygicord instead of dpymenus)
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
