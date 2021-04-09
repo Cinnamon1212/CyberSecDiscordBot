@@ -99,12 +99,6 @@ class help(commands.Cog):
             elif command.parent is not None:
                 continue
             page7.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        for command in self.client.get_cog("reactroles").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            page7.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
 
         page8 = Page(title="Maths", description="Various maths commands", inline=False, colour=discord.Colour.random())
         for command in self.client.get_cog("maths").walk_commands():
