@@ -1,4 +1,4 @@
-import discord
+import discord, asyncio
 from discord.ext import commands
 
 class admin(commands.Cog):
@@ -33,9 +33,67 @@ class admin(commands.Cog):
 
     @commands.command(pass_context=True, name="clear", aliases=["purge", "remove"], description="Clears messages from a channel")
     @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx, amount=1):
+    async def clear(self, ctx, amount=1, channel_id=None):
+        text = """Usage: ./clear [Amount/ID] (channel
+if the command is not in the channel, please specify the channel"""
         if commands.has_permissions(manage_messages=True):
-            await ctx.channel.purge(limit=amount + 1)
+            if len(str(amount)) != 18:
+                try:
+                    amount = int(amount)
+                    check = True
+                except ValueError:
+                    await ctx.send(f"```Invalid amount of numbers\n{text}```")
+                    check = False
+                if check is True:
+                    if amount > 50:
+                        await ctx.send(f"You are about to delete {amount} message, are you sure you'd like to continue (Y/N)?")
+                        accepted = ["yes", "no", "y", "n"]
+                        try:
+                            confirm = await self.client.wait_for(
+                                        "message",
+                                        timeout=20,
+                                        check=lambda message: message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in accepted)
+                        except asyncio.TimeoutError:
+                            await ctx.send("Clear command timed out", delete_after=10)
+                        positives = ["yes", "y"]
+                        negatives = ["no", "n"]
+                        if confirm.content.lower() in positives:
+                            await ctx.channel.purge(limit=amount + 1)
+                        elif confirm.content.lower() in negatives:
+                            await ctx.send("Clear command was cancelled", delete_after=10)
+                    else:
+                        await ctx.channel.purge(limit=amount + 1)
+            else:
+                try:
+                    messageid = int(amount)
+                    check = True
+                except ValueError:
+                    await ctx.send(f"```Invalid message ID\n{text}```")
+                    check = False
+                if check is True:
+                    if channel_id is None:
+                        msg = await ctx.channel.fetch_message(messageid)
+                        await msg.delete()
+                        await ctx.send("```Message deleted```", delete_after=10)
+                    else:
+                        if len(str(channel_id)) == 18:
+                            try:
+                                channel_id = int(channel_id)
+                                check = True
+                            except ValueError:
+                                await ctx.send(f"```Invalid channel ID\n{text}```")
+                            for channel in ctx.guild.channels:
+                                if channel.id == channel_id:
+                                    message_channel = channel
+                                    break
+                                else:
+                                    message_channel = None
+                            if message_channel is not None:
+                                msg = await message_channel.fetch_message(messageid)
+                                await msg.delete()
+                                await ctx.send("```Message deleted```", delete_after=10)
+                            else:
+                                await ctx.send(f"Unable to find channel\n{text}")
         else:
             await ctx.send("You cannot use this command!")
 
