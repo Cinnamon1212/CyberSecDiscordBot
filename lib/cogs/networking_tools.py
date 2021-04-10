@@ -59,7 +59,7 @@ async def payloadgen(ctx, payload, ip, port):
     args = f"msfvenom -p {payload} LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_payload.txt"
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await cmd.communicate()
-
+    print(stdout)
 async def nmap_scan(scantype, ip, ports=""):
     scanner = aionmap.PortScanner()
     if ports != "":
@@ -270,12 +270,15 @@ Requested by: {ctx.author.name}
             if validate_port(port) is True:
                 if validate_ip(ip) is True:
                     port = int(port)
-                    bad_chars = [';', ':', '!', '*', '#', '$', '(', ')']
+                    bad_chars = [';', ':', '!', '*', '#', '$', '(', ')', '&', '\\', '"', '\'']
                     payload = ''.join((filter(lambda i: i not in bad_chars, payload)))
                     payload = payload.lower()
-                    await ctx.send(f"Generating {payload}")
+                    await ctx.send(f"Attempting to generate {payload}")
                     await payloadgen(ctx, payload, ip, port)
-                    await ctx.author.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
+                    try:
+                        await ctx.author.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
+                    except:
+                        await ctx.send("Unable to generate payload, please ensure a valid payload is selected")
                     os.remove(f"./payloads/{ctx.author.id}_payload.txt")
                 else:
                     await ctx.send(f"```Please enter a valid IP\n{text}```")
