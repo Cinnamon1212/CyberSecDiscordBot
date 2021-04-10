@@ -12,12 +12,11 @@ To Do list:
 * Tidy code/Remove clutter
 
 Changelog:
-* Removed music and reactroles cog (Moved lyrics command to the fun cog)
-* Replace old nmap with aionmap (prevent blocking)
-* Replaced ping subprocess with asyncio subprocess (prevent blocking)
-* Updated clear command (allows clear by ID)
-* Removed covid cog
-* Replaced help command (using pygicord instead of dpymenus)
+* Replaced all network utils with async versions (prevent blocking)
+* Remade passgen to prevent users from generating large amounts of passwords
+* Remade msfvenom command to allow all payloads, using regex to validate the payload
+* Banned all scans on local IPs
+* Added tor stats to ./stats
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
