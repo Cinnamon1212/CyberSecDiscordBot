@@ -1,4 +1,5 @@
-import discord, os, requests, json, urllib3, exiftool, subprocess, faker, imgkit
+import discord, os, requests, json, urllib3, exiftool, subprocess, faker
+import async_imgkit.api as imgkit
 from faker.providers import bank, credit_card, phone_number
 from bs4 import BeautifulSoup
 from discord import Embed, colour
@@ -14,6 +15,13 @@ def chase_redirects(url):
             url = r.headers['location']
         else:
             break
+
+async def webss_f(ctx, url):
+    await ctx.send("Attempting to grab the web page, some pages may block tor connections")
+    try:
+        await imgkit.from_url(url, f'./webpages/{ctx.author.id}.jpg')
+    except:
+        await ctx.send("There was an error while rendering the site")
 class websites(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -21,21 +29,10 @@ class websites(commands.Cog):
     @commands.command(name="StatusCheck", aliases=["Websitestatus", "webstatus", "httpstatus"], description="Used for getting http response code of a web page")
     async def website(self, ctx, url=""):
         if url == "":
-            await ctx.send("Please enter a url to check")
+            await ctx.send("Usage: ./webstatus (url)")
         else:
-            http = urllib3.PoolManager()
-            resp = http.request('GET', url)
-            await ctx.send(f"website returned: {resp.status}")
-
-    @website.error
-    async def website_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter an email to check!")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please ensure you enter an email!")
-        else:
-            raise
-            await ctx.send("An error has occured!")
+            async with request("GET", url) as resp:
+                await ctx.send(f"website returned: {resp.status}")
 
     @commands.command(name="emailchecker", description="Verifies if an email is real or not", aliases=["emailverify", "emailinfo"])
     async def emailchecker(self, ctx, email: str):
@@ -85,7 +82,7 @@ class websites(commands.Cog):
                 embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
                 await ctx.send(embed=embed)
             elif response.status == 400:
-                await ctx.send("That's not an email!")
+                await ctx.send(f"That's not an email!\nUsage: ./emailchecker [email]")
             else:
                 await ctx.send("There was an issue with the API!")
                 print(f"API returned {response.status}")
@@ -93,12 +90,9 @@ class websites(commands.Cog):
     @emailchecker.error
     async def emailchecker_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter an email to check!")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please ensure you enter an email!")
+            await ctx.send("Usage: ./emailchecker [email]")
         else:
             raise
-            await ctx.send("An error has occured!")
 
     @commands.command(name="IdentityGenerator", description="Generates fake personal information", aliases=["Faker", "FakeID"])
     async def IdentityGenerator(self, ctx):
@@ -157,9 +151,7 @@ class websites(commands.Cog):
 
     @commands.command(name="WebScreenshot", description="Takes a screenshot of a URL", aliases=["WebSS", "GrabPage"])
     async def WebScreenshot(self, ctx, url: str):
-        options = {"width": "2000",
-                   "disable-smart-width": ""}
-        imgkit.from_url(url, f'./webpages/{ctx.author.id}.jpg', options=options)
+        await webss_f(ctx, url)
         await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.jpg"))
         os.remove(f"./webpages/{ctx.author.id}.jpg")
 
@@ -169,5 +161,7 @@ class websites(commands.Cog):
             await ctx.send("Please provide a url")
         else:
             raise
+
+
 def setup(client):
     client.add_cog(websites(client))
