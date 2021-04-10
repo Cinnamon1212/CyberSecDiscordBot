@@ -1,9 +1,10 @@
-import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio
+import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio, math, pprint
 from socket import gaierror
 from datetime import datetime
 from discord import Embed, colour
 from discord.ext import commands
 from aiohttp import request
+from pygicord import Paginator
 
 def validate_ip(s):
     if s is not None:
@@ -284,35 +285,150 @@ Requested by: {ctx.author.name}
                     await ctx.send(f"```Please enter a valid IP\n{text}```")
             else:
                 await ctx.send(f"```Please enter a valid port\n{text}```")
+
     @commands.command(name="cvesearch", description="Search", alises=["cveid", "cvelookup"])
-    async def cvesearch(self, ctx, cveid):
-        if cveid == "":
-            await ctx.send("Please provide a cve ID")
-        else:
-            url = "https://cve.circl.lu/api/cve/" + cveid
-            async with request("GET", url, headers={}) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    embed = Embed(title=f"Info on {cveid}",
-                                  description=f"Name: {data['capec'][0]['name']}",
-                                  colour=discord.Colour.random(),
-                                  inline=True)
-                    embed.add_field(name="Authentication: ", value=data['access']['authentication'], inline=True)
-                    embed.add_field(name="Complexity: ", value=data['access']['complexity'], inline=True)
-                    embed.add_field(name="Vector: ", value=data['access']['vector'], inline=True)
-                    embed.add_field(name="Summary: ", value=data['capec'][0]['summary'], inline=True)
-                    embed.add_field(name="Solutions: ", value=data['capec'][0]['solutions'], inline=True)
+    async def cvesearch(self, ctx, search_type=None, query=""):
+        pp = pprint.PrettyPrinter(indent=4)
+        text = """
+Usage: ./cvesearch [search type] (query)
 
-                    time = ctx.message.created_at
-                    embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+CVE Options:
+latest - fetch latest CVE # Returns latest CVE
+browse - browse vendors (Microsoft) # returns list of vendor products
+id - fetch CVE by ID (CVE-2014-0160)
+search - search for a CVE (microsoft/office) # Not working, try ./exDB [query]
+dbinfo - Returns a list of database updates
 
-                    await ctx.send(embed=embed)
-    @cvesearch.error
-    async def cves_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a CVE to search")
+CVE info from: https://cve.circl.lu/
+        """
+        if search_type is None:
+            await ctx.send(f"```{text}```")
         else:
-            raise
+            search_type = search_type.lower()
+            if query == "":
+                if search_type == "dbinfo":
+                    async with request("GET", f"https://cve.circl.lu/api/dbInfo", headers={}) as r:
+                        if r.status == 200:
+                            data = await r.json()
+                            embed = Embed(title="Database information", description="https://cve.circl.lu/", colour=discord.Colour.random())
+                            embed.add_field(name="Last CAPEC update: ", value=data['capec']['last_update'], inline=False)
+                            embed.add_field(name="Last CPE update: ", value=data['cpe']['last_update'], inline=False)
+                            embed.add_field(name="Last CPE other update: ", value=data['cpeOther']['last_update'], inline=False)
+                            embed.add_field(name="Last CVE update: ", value=data['cves']['last_update'], inline=False)
+                            embed.add_field(name="Last CWE update: ", value=data['cwe']['last_update'], inline=False)
+                            embed.add_field(name="Last via 4 update: ", value=data['via4']['last_update'], inline=False)
+                            await ctx.send(embed=embed)
+                        else:
+                            await ctx.send(f"```There was an error while fetching database info\n{text}```")
+                elif search_type == "latest":
+                    async with request("GET", f"https://cve.circl.lu/api/last/1", headers={}) as r:
+                        if r.status == 200:
+                            data = await r.json()
+                            last = data[0]
+                            embed = Embed(title=last['id'], description=f"Published: {last['Published']}", colour=discord.Colour.random())
+                            if last['cvss'] is not None:
+                                embed.add_field(name="Vulnerability score: ", value=last['cvss'])
+                            else:
+                                embed.add_field(name="Vulnerability score: ", value="Unknown")
+                            impact = last['impact']
+                            if impact == {}:
+                                embed.add_field(name="Impact: ", value="Unknown", inline=False)
+                            else:
+                                embed.add_field(name="Impact: ",
+                                                value=f"Availability: {impact['availability']}\nConfidentiality: {impact['confidentiality']}\nIntegrity: {impact['integrity']}")
+                            access = last['access']
+                            if access == {}:
+                                embed.add_field(name="Access: ", value="Unknown", inline=False)
+                            else:
+                                embed.add_field(name="Access: ",
+                                                value=f"Auth: {access['authentication']}\nComplexity: {access['complexity']}\nVector: {access['vector']}")
+                            product = last['vulnerable_product']
+                            if product == []:
+                                embed.add_field(name="Product: ", value="Unknown", inline=False)
+                            else:
+                                prod_end = math.ceil(len(product)) / 2
+                                embed.add_field(name="Product(s): ", value=product[0:int(prod_end)], inline=False)
+                            ref = last['references']
+                            ref = ref[0:3]
+                            ref = "\n".join(ref)
+                            embed.add_field(name="References: ", value=ref, inline=False)
+                            summary = last['summary']
+                            summary = "".join(summary)
+                            embed.add_field(name="Summary: ", value=summary)
+                            await ctx.send(embed=embed)
+                        else:
+                            await ctx.send(f"```There was an error while fetching the latest CVEs\n{text}```")
+                else:
+                    await ctx.send(f"```Please enter a query\n{text}```")
+            else:
+                if search_type == "browse":
+                    async with request("GET", f"https://cve.circl.lu/api/browse/{query}", headers={}) as r:
+                        if r.status == 200:
+                            data = await r.json()
+                            products = data['product']
+                            embed = Embed(title=f"Browse results for {query}", colour=discord.Colour.random())
+                            x = 1
+                            i = 0
+                            while i != 25:
+                                try:
+                                    z = products[i]
+                                    embed.add_field(name=f"Product #{x}", value=z, inline=False)
+                                    x += 1
+                                    i += 1
+                                except IndexError:
+                                    break
+                            embed.set_footer(text="CVE results from https://cve.circl.lu/")
+                            await ctx.send(embed=embed)
+                        else:
+                            await ctx.send(f"```There was an error while browsing for {query}\n{text}```")
+                elif search_type == "id":
+                    async with request("GET", f"https://cve.circl.lu/api/cve/{query}", headers={}) as r:
+                        if r.status == 200:
+                            data = await r.json()
+                            pages = []
+                            overview = Embed(title=f"CVE Overview: {query}", colour=discord.Colour.random())
+                            overview.add_field(name="Last modified: ", value=data['Modified'], inline=False)
+                            overview.add_field(name="Published: ", value=data['Published'], inline=False)
+                            overview.add_field(name="Assigner: ", value=data['assigner'], inline=False)
+                            access = data["access"]
+                            overview.add_field(name="Authentication: ", value=access['authentication'], inline=False)
+                            overview.add_field(name="Complexity: ", value=access['complexity'], inline=False)
+                            overview.add_field(name="Vector: ", value=access['vector'])
+                            overview.set_footer(text="CVE results from https://cve.circl.lu/")
+                            pages.append(overview)
+
+                            refs = data['references']
+                            try:
+                                refs = refs[0:10]
+                            except IndexError:
+                                pass
+                            references = Embed(title="References", colour=discord.Colour.random())
+                            for r in refs:
+                                references.add_field(name="⠀", value=r, inline=False)
+                            pages.append(references)
+
+                            capecs = data['capec']
+                            try:
+                                capecs = capecs[0:3]
+                            except IndexError:
+                                pass
+                            for c in capecs:
+                                embed = Embed(title=c['name'], colour=discord.Colour.random())
+                                embed.add_field(name="ID: ", value=c['id'], inline=False)
+                                embed.add_field(name="Prerequisites", value=c['prerequisites'], inline=False)
+                                summary = "".join(c['summary'])
+                                embed.add_field(name="Summary: ", value=summary, inline=False)
+                                solution = "".join(c['solutions'])
+                                embed.add_field(name="Solutions: ", value=solution, inline=False)
+                                pages.append(embed)
+                            paginator = Paginator(pages=pages)
+                            await paginator.start(ctx)
+                        else:
+                            await ctx.send(f"```There was an error while finding CVE ID: {query}\n{text}```")
+                elif search_type == "search":
+                    await ctx.send("Not currently working..")
+                else:
+                    await ctx.send(f"```Invalid search type\n{text}```")
 
 def setup(client):
     client.add_cog(networkingtools(client))
