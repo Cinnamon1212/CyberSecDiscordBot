@@ -1,4 +1,4 @@
-import discord, random, time, datetime, sys, platform, math, psutil, os
+import discord, random, time, datetime, sys, platform, math, psutil, os, subprocess
 from discord.ext import commands, tasks
 from itertools import cycle
 from discord import Colour, Embed
@@ -8,6 +8,8 @@ from pygicord import Paginator
 start_time = time.time()
 version = "Alpha 3.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
+torversion = subprocess.check_output("tor --version", shell=True)
+torversion = torversion.decode("utf-8")
 
 class misc(commands.Cog):
     def __init__(self, client):
@@ -108,6 +110,7 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
         embed.add_field(name="Python version: ", value=sys.version, inline = False)
         embed.add_field(name="Discord.py version: ", value=discord.__version__)
+        embed.add_field(name="Tor version", value=torversion)
         mtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
