@@ -6,7 +6,7 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Alpha 3.0"
+version = "Beta 2.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 torversion = subprocess.check_output("tor --version", shell=True)
 torversion = torversion.decode("utf-8")
@@ -47,6 +47,7 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Version: ", value=version, inline=False)
         embed.add_field(name="Number of servers: ", value=f"{len(self.client.guilds)}", inline=False)
         embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot", inline=False)
+        embed.add_field(name="Support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
         embed.set_footer(text=f"Creator: {owner}")
         await ctx.send(embed=embed)
 
@@ -61,7 +62,6 @@ Latency: {round(self.client.latency * 1000)} ms
                 embed = Embed(title=f"{ctx.message.guild.name} roles", colour=discord.Colour.random())
                 embed.set_footer(text=f"Page {x}/{pagecount}")
                 x += 1
-                print(x)
                 for role in roles[x - 2]:
                     embed.add_field(name=f"#{z}", value=role.name)
                     z += 1
@@ -114,5 +114,16 @@ Latency: {round(self.client.latency * 1000)} ms
         mtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
+
+    @commands.command(name="invite", description="invite the bot to your server")
+    async def invite(self, ctx):
+        embed = Embed(title="Bot invites", colour=discord.Colour.random())
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Invite the bot to your server: ", value="https://bit.ly/3fGmftl", inline=False)
+        embed.add_field(name="Join the support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
+        mtime = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
+        await ctx.send(embed=embed)
+
 def setup(client):
     client.add_cog(misc(client))
