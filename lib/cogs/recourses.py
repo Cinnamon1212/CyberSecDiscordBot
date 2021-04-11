@@ -96,12 +96,13 @@ class recourses(commands.Cog):
         pages = []
 
         main = Embed(title="Programming Recourses", colour=discord.Colour.random())
-        main.add_field(name="```(1) Python```", value="⠀", inline=False)
-        main.add_field(name="```(2) C Family```", value="⠀", inline=False)
-        main.add_field(name="```(3) Java```", value="⠀", inline=False)
-        main.add_field(name="```(4) Go ```", value="⠀", inline=False)
-        main.add_field(name="```(5) Swift```", value="⠀", inline=False)
-        main.add_field(name="```(6) Web development + databases```", value="⠀", inline=False)
+        main.add_field(name="```(1) Main```", value="⠀", inline=False)
+        main.add_field(name="```(2) Python```", value="⠀", inline=False)
+        main.add_field(name="```(3) C Family```", value="⠀", inline=False)
+        main.add_field(name="```(4) Java```", value="⠀", inline=False)
+        main.add_field(name="```(5) Go ```", value="⠀", inline=False)
+        main.add_field(name="```(6) Swift```", value="⠀", inline=False)
+        main.add_field(name="```(7) Web development + databases```", value="⠀", inline=False)
         main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 6)")
         pages.append(main)
 
@@ -159,6 +160,173 @@ class recourses(commands.Cog):
         paginator = Paginator(pages=pages)
         await paginator.start(ctx)
 
+    @commands.command(name="hackingbasics", description="Useful hacking recourses", aliases=["learnhacking", "hacking", "hbasics"])
+    async def hackingrecourses(self, ctx):
+        pages = []
+
+        main = Embed(title="Hacking basics", colour=discord.Colour.random())
+        main.add_field(name="```(1) Main```", value="⠀", inline=False)
+        main.add_field(name="```(2) What is ethical hacking?```", value="⠀", inline=False)
+        main.add_field(name="```(3) Stages of penetration testing```", value="⠀", inline=False)
+        main.add_field(name="```(4) Do's and Don'ts of a pentest```", value="⠀", inline=False)
+        main.add_field(name="```(5) Cyber security jobs ```", value="⠀", inline=False)
+        main.add_field(name="```(6) Places you can learn```", value="⠀", inline=False)
+        main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 6)")
+        pages.append(main)
+
+        ethicalhacking = Embed(title="What is ethical hacking?", colour=discord.Colour.random())
+        explanation = """
+Ethical hacking is when a security expert (often a penetration tester) attempts to gain access to an IT system of which they are permitted to test.
+This is done in order to expose potential vulnerabilities in the system so they may be patched before a black hat hacker exploits them.
+        """
+        ethicalhacking.add_field(name="Explained", value=explanation, inline=False)
+        typesofhackers = """
+White hat:
+    A white hat hacker is something who hacks ethically in order to improve the security of an IT system.
+
+Gray hat:
+    A gray hat is someone who sits between a black hat and white hat however often don't have the same malicious intent as a black hat hacker
+
+Black hat:
+    A black hat hacker is someone who hacks with malicious intent, often for monetary gain or to cause harm to others.
+
+Note: Only white hat hacking is condone by the bot owner. Please follow your local laws.
+        """
+        ethicalhacking.add_field(name="Types of hackers", value=typesofhackers, inline=False)
+        commonlyusedterms = """
+Script kiddie (skid):
+    Someone who relies soley on premade scripts with little to no actual knowledge
+
+Hacktivism:
+    When hacking is used to spread a message or belief (such as anonymous or Lulzsec)
+
+Footprinting:
+    Footprinting is the act of performing passive recon on a target, finding information without actively engaging with the target.
+
+OSINT:
+    OSINT (open source intellegence) refers to publicly available information, similar to doxing, it's used to gather information on a target via openly accessible information.
+
+IoT:
+    IoT (internet of things) refers to all physical objects on the internet that have embedded software however it's commonly used to refer to non-daily use devices such as sensors, games consoles, printers, etc.
+        """
+        ethicalhacking.add_field(name="Commonly used terms", value=commonlyusedterms, inline=False)
+        ethicalhacking.set_footer(text=f"Please use the 🔢 button to jump to a page (page 2 out of 6)")
+        pages.append(ethicalhacking)
+
+        stages = Embed(title="Stages of penetration testing", colour=discord.Colour.random())
+        recon = """
+Reconnaissance is the first and most important stage of penetration testing. This can be split into two types:
+
+Passive:
+    Passive recon is indirectly gathering information on a target without directly interacting with them. This includes:
+    Checking social media accounts
+    Checking public webistes
+    Using publicly available software
+
+Active:
+    Active recon involves directly trying to gain information such as services, open ports, domains, etc. Some examples:
+    Port scanning
+    Web crawling
+    Subdomain bruteforcing
+        """
+        stages.add_field(name="#1 Reconnaissance", value=recon, inline=False)
+        scanning = """
+Scanning is when an attacker actively scans for further information, types of scans include:
+    Network mapping
+    Port scanning
+    Vulnerability scanning
+    Service enumeration
+        """
+        stages.add_field(name="#2 Scanning", value=scanning, inline=False)
+        exploitation = """
+Exploitation is the stage where the "hack" happens. While this can be exciting, it can't happen if you skip the two previous steps.
+Examples of exploitation:
+    Bruteforcing accounts
+    Service exploitation
+    Web app hacking
+    Uploading malware
+    Reverse engineering
+        """
+        stages.add_field(name="#3 Exploitation", value=exploitation, inline=False)
+        post = """
+So you've finally got some foothold on your target, there's four vital steps you must take:
+
+1) Escalate your privilleges, ideally to a root/admin account
+2) Secure a stable backdoor (Usually through SSH or some other secure shell)
+3) Gather evidence to use in your report
+4) Clear your track (clear logs, migrate process, remove files you've created, timestomp files you've accessed)
+        """
+        stages.add_field(name="#4 Post exploitation", value=post, inline=False)
+        reporting = """
+You've completed your job, you now need to report your findings to the target in a format they can use to improve their security.
+Include:
+Videos/images to evidence your stages
+A written explanation in layman terms (the target may not be as tech savvy as you)
+Suggested fixes with links to patches or alternative software/hardware
+        """
+        stages.add_field(name="#5 Reporting", value=reporting, inline=False)
+        stages.set_footer(text=f"Please use the 🔢 button to jump to a page (page 3 out of 6)")
+        pages.append(stages)
+
+        dosanddonts = Embed(title="Do's and don'ts of pentesting", colour=discord.Colour.random())
+        do = """
+#1 Get express, preferably written, permission from a target before engaging in a pentest
+#2 Clarify and respect boundaries and stay within your given scope
+#3 Use mostly self-made tools and manual testing
+#4 Attempt more than one method of entry
+#5 Give your findings in a clear and precise report
+#6 Offer training to the target (and their employees)
+        """
+        dosanddonts.add_field(name="Do", value=do, inline=False)
+        dont = """
+#1 Cause damage to an IT system/Physical property of the target (you will be held liable.)
+#2 Disrupt their business, this may lead to them losing customers/income
+#3 Disclose vulnerabilities without express permission from the target
+#4 Steal private information during a pentest for personal use
+#5 Access customer accounts/accounts out of the scope
+#6 Spread information on the pentest outside of what's agreed with the target
+        """
+        dosanddonts.add_field(name="Don't", value=dont, inline=False)
+        dosanddonts.set_footer(text=f"Please use the 🔢 button to jump to a page (page 4 out of 6)")
+        pages.append(dosanddonts)
+
+        jobs = Embed(title="Jobs in cyber security", colour=discord.Colour.random())
+        CISO = """
+A CISO is typically a mid executive level position who oversees general operations regarding IT security.
+They are directly responsible for planning, co-ordinating and directing all IT system security implemntations
+
+Average salary: £117,155 / year (26/3/2021)
+        """
+        jobs.add_field(name="Chief information security officer (CISO)", value=CISO, inline=False)
+        FCA = """
+Forensic computer analysts are responsible for investigating IT security related incidents, such as ransomware and phishing attacks.
+Average salary: £34,888 (21/2/2021)
+        """
+        jobs.add_field(name="Forensic computer analyst", value=FCA, inline=False)
+        pentester = """
+A pentester is someone who uses ethical hacking to expose vulnerabilities in an IT system and help patch them.
+Average salary: £54,244 (11/04/2021)
+        """
+        jobs.add_field(name="Penetration tester", value=pentester, inline=False)
+        consultant = """
+An IT security consultant is responsible for advising a client on how to protect their organizations' cyber sec objectives.
+Average salary: £63,906 (11/04/2021)
+        """
+        jobs.add_field(name="IT security consultant", value=consultant, inline=False)
+        jobs.set_footer(text=f"Please use the 🔢 button to jump to a page (page 5 out of 6)")
+        pages.append(jobs)
+
+        learn = Embed(title="Places you can learn", colour=discord.Colour.random())
+        learn.add_field(name="Cybrary", value="https://www.cybrary.it/", inline=False)
+        learn.add_field(name="Udemy", value="https://www.udemy.com/topic/cyber-security/", inline=False)
+        learn.add_field(name="Youtube", value="https://www.youtube.com/results?search_query=cyber+security", inline=False)
+        learn.add_field(name="Null Byte", value="https://null-byte.wonderhowto.com/", inline=False)
+        learn.add_field(name="Tryhackme", value="https://tryhackme.com/", inline=False)
+        learn.set_footer(text=f"Please use the 🔢 button to jump to a page (page 6 out of 6)")
+        pages.append(learn)
+
+        paginator = Paginator(pages=pages)
+        await paginator.start(ctx)
 
 def setup(client):
     client.add_cog(recourses(client))
