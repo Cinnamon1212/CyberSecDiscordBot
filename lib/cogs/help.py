@@ -20,7 +20,6 @@ class help(commands.Cog):
         self.client.remove_command('help')
 
     @commands.command(name="help", aliases=["commands", "h"], description="Displays this command")
-    @commands.bot_has_permissions(manage_messages=True)
     async def help(self, ctx):
         pages = []
         main = Embed(title="Command help", colour=discord.Colour.random())
