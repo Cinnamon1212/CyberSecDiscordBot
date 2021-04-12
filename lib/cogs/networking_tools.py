@@ -19,9 +19,7 @@ def validate_ip(s):
             if i < 0 or i > 255:
                 return False
         firstsix = s[0:6]
-        print(firstsix)
         check = any(r in firstsix for r in restricted)
-        print(check)
         if check is True:
             return False
         else:
@@ -53,6 +51,14 @@ async def dig_f(ip):
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await cmd.communicate()
     output = str(stdout, 'utf-8')
+    return output
+
+async def whois_f(domain):
+    args = f"whois {domain}"
+    cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await cmd.communicate()
+    output = str(stdout, 'utf-8')
+    print(output)
     return output
 
 async def payloadgen(ctx, payload, ip, port):
@@ -212,7 +218,6 @@ class networkingtools(commands.Cog):
             checks = False
 
         if checks is True:
-            scan_start = datetime.now()
             if ports != "":
                 await ctx.send(f"Executing: nmap {scantype} {ip} -p {ports}, results will be sent to your DMs!")
                 results = await nmap_scan(scantype, ip, ports)
@@ -286,7 +291,7 @@ Requested by: {ctx.author.name}
             else:
                 await ctx.send(f"```Please enter a valid port\n{text}```")
 
-    @commands.command(name="cvesearch", description="Search", alises=["cveid", "cvelookup"])
+    @commands.command(name="cvesearch", description="Search CVEs on https://cve.circl.lu/", alises=["cveid", "cvelookup"])
     async def cvesearch(self, ctx, search_type=None, query=""):
         pp = pprint.PrettyPrinter(indent=4)
         text = """
@@ -429,6 +434,31 @@ CVE info from: https://cve.circl.lu/
                     await ctx.send("Not currently working..")
                 else:
                     await ctx.send(f"```Invalid search type\n{text}```")
+
+    @commands.command(name="whois", description="perform who is search on a given domain")
+    async def whois(self, ctx, domain):
+        text = "Usage: ./whois [domain]"
+        check = False
+        try:
+            ip = socket.gethostbyname(domain)
+            check = True
+        except gaierror:
+            await ctx.send(f"Unable to associate IP with the domain\n{text}")
+        if check is True:
+            if validate_ip(ip) is True:
+                result = await whois_f(domain)
+                if len(result) <= 5994:
+                    await ctx.send(f"```{result}```")
+                else:
+                    now = datetime.now()
+                    filename = f"./whois/{now}_{ctx.author.id}.txt"
+                    with open(filename, 'a') as f:
+                        f.write(result)
+                    f.close()
+                    await ctx.send(file=discord.File(filename))
+                    os.remove(filename)
+            else:
+                await ctx.send(f"The domain returned an invalid IP!\n{text}")
 
 def setup(client):
     client.add_cog(networkingtools(client))
