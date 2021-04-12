@@ -12,7 +12,7 @@ To Do list:
 * Tidy code/Remove clutter
 
 Changelog:
-* Replaced all network utils with async versions (prevent blocking)
+* Added Whois
 * Remade passgen to prevent users from generating large amounts of passwords
 * Remade msfvenom command to allow all payloads, using regex to validate the payload
 * Banned all scans on local IPs
