@@ -11,7 +11,7 @@ To Do list:
 * Add more admin commands (back up, channel purge)
 * Tidy code/Remove clutter
 
-Changelog:
+Recent changes:
 * Added Whois
 * Remade passgen to prevent users from generating large amounts of passwords
 * Remade msfvenom command to allow all payloads, using regex to validate the payload
