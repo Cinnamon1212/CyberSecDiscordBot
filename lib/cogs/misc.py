@@ -108,9 +108,9 @@ Latency: {round(self.client.latency * 1000)} ms
         process = psutil.Process(os.getpid())
         embed.add_field(name="Memory usage: ", value=f"{round(process.memory_info().rss / 1024 ** 2, 2)} Mbs", inline=False)
         embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
-        embed.add_field(name="Python version: ", value=sys.version, inline = False)
+        embed.add_field(name="Python version: ", value=sys.version, inline=False)
         embed.add_field(name="Discord.py version: ", value=discord.__version__)
-        embed.add_field(name="Tor version", value=torversion)
+        embed.add_field(name="Tor version", value=torversion, inline=False)
         mtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
