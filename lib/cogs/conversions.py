@@ -1,5 +1,4 @@
 import discord, base64, os, aiofiles, random, re, art
-import barcode as bar
 import qrcode as qr
 from asyncio import TimeoutError
 from datetime import datetime
