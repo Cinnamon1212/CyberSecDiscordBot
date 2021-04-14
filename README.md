@@ -4,9 +4,9 @@ A cyber security discord bot with featuring networking, hacking and website util
 
 To Do list:  
 * Create usage string for all commands (Usage ./(command) [required] (optional)
-* Add more network utilities (Banner grabbing, more nmap scan types, capture file analysis)
+* Add more network utils (Banner grabbing, more nmap scan types, capture file analysis)
 * Add more cryptography tools (more hashes, encoding, morse code, etc)
-* Add more web page ulities (url shortener)
+* Add more web page utils (url shortener)
 * Add AI chat bot
 * Add more admin commands (back up, channel purge)
 * Tidy code/Remove clutter
@@ -15,8 +15,8 @@ Recent changes:
 * Added Whois
 * Remade passgen to prevent users from generating large amounts of passwords
 * Remade msfvenom command to allow all payloads, using regex to validate the payload
-* Banned all scans on local IPs
-* Added tor stats to ./stats
+* Added conversion cog (./texto and ./QRGen)
+* Fixed tor stats to ./stats
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
