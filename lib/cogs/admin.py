@@ -5,36 +5,101 @@ class admin(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(pass_context=True, name="kick", aliases=["kickhammer"], description="Kicks a user from the discord")
+    @commands.command(name="kick", description="Kicks a discord user", aliases=["kickhammer"])
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason=None):
-        if commands.has_permissions(kick_members=True):
-            await member.kick(reason=reason)
-            await ctx.send(f"{member} has been kicked for {reason}")
+    async def kick(self, ctx, member: discord.Member = None, *, reason="Unspecified reason"):
+        text = "Usage: ./kick [member] (reason)"
+        if member is None:
+            await ctx.send(f"```{text}```")
         else:
-            await ctx.send("You cannot use this command!")
+            bot_ = ctx.guild.get_member(self.client.user.id)
+            author = ctx.guild.get_member(ctx.author.id)
+            if member.top_role > author.top_role:
+                await ctx.send("This user has higher permissions than you!")
+            elif bot_.top_role < member.top_role:
+                await ctx.send("The user has higher permissions than I do!")
+            else:
+                await member.kick(reason=reason)
+                await ctx.send(f"{member.name} was kicked for {reason}")
+
     @kick.error
     async def kick_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send('I could not find that user')
-
-    @commands.command(pass_context=True, name="ban", aliases=["banhammer"], description="Bans a user from the discord")
-    @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, *, reason: str):
-        if commands.has_permissions(ban_members=True):
-            await member.ban(reason=reason)
-            await ctx.send(f"{member} has been banned for {reason}")
+        if isinstance(error, commands.MissingPermissions):
+            text = "Usage: ./kick [member] (reason)"
+            await ctx.send(f"You do not have sufficient permissions to use this command\n```{text}```")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("An error has occured, likely the bot is missing permissions")
         else:
-            await ctx.send("You cannot use this command!")
+            raise
+
+    @commands.command(name="ban", description="bans a discord user", aliases=["banhammer"])
+    @commands.has_permissions(ban_members=True)
+    async def ban(self, ctx, member: discord.Member = None, *, reason="Unspecified reason"):
+        text = "Usage: ./ban [member] (reason)"
+        if member is None:
+            await ctx.send(f"```{text}```")
+        else:
+            bot_ = ctx.guild.get_member(self.client.user.id)
+            author = ctx.guild.get_member(ctx.author.id)
+            if member.top_role > author.top_role:
+                await ctx.send("This user has higher permissions than you!")
+            elif bot_.top_role < member.top_role:
+                await ctx.send("The user has higher permissions than I do!")
+            else:
+                await member.ban(reason=reason)
+                await ctx.send(f"{member.name} was banned for {reason}")
+
     @ban.error
     async def ban_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send('I could not find that user')
+        text = "Usage: ./ban [member] (reason)"
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"You do not have sufficient permissiosn to use this command\n```{text}```")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("An error has occured, likely the bot is missing permissions")
+        else:
+            raise
+
+    @commands.command(name="unban", description="unbans a discord user", aliases=["unbanhammer"])
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, ctx, *, member=None):
+        text = "Usage: ./uban [member/ID]"
+        if member is None:
+            await ctx.send(f"```{text}```")
+        else:
+            if len(member) == 18:
+                try:
+                    member = int(member)
+                    user = self.client.fetch_user
+                    await ctx.guild.unban(user)
+                    stop = True
+                except discord.NotFound:
+                    await ctx.send(f"Unable to find a user with the provided ID!\n{text}")
+                    stop = True
+            else:
+                stop = False
+            if stop is False:
+                banned_users = await ctx.guild.bans()
+                member_name, member_discriminator = member.split('#')
+                for banned in banned_users:
+                    x = banned.user
+                    if (x.name, x.discriminator) == (member_name, member_discriminator):
+                        await ctx.guild.unban(x)
+                        await ctx.send(f"{x.name}#{x.discriminator} has been unbanned")
+
+    @unban.error
+    async def unban_error(self, ctx, error):
+        text = "Usage: ./ban [member] (reason)"
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"You do not have sufficient permissiosn to use this command\n```{text}```")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("An error has occured, likely the bot is missing permissions")
+        else:
+            raise
 
     @commands.command(pass_context=True, name="clear", aliases=["purge", "remove"], description="Clears messages from a channel")
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount=1, channel_id=None):
-        text = """Usage: ./clear [Amount/ID] (channel
+        text = """Usage: ./clear [Amount/ID] (channel)
 if the command is not in the channel, please specify the channel"""
         if commands.has_permissions(manage_messages=True):
             if len(str(amount)) != 18:
@@ -46,21 +111,24 @@ if the command is not in the channel, please specify the channel"""
                     check = False
                 if check is True:
                     if amount > 50:
-                        await ctx.send(f"You are about to delete {amount} message, are you sure you'd like to continue (Y/N)?")
-                        accepted = ["yes", "no", "y", "n"]
-                        try:
-                            confirm = await self.client.wait_for(
-                                        "message",
-                                        timeout=20,
-                                        check=lambda message: message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in accepted)
-                        except asyncio.TimeoutError:
-                            await ctx.send("Clear command timed out", delete_after=10)
-                        positives = ["yes", "y"]
-                        negatives = ["no", "n"]
-                        if confirm.content.lower() in positives:
-                            await ctx.channel.purge(limit=amount + 1)
-                        elif confirm.content.lower() in negatives:
-                            await ctx.send("Clear command was cancelled", delete_after=10)
+                        if ctx.author.top_role.permissions.administrator is True:
+                            await ctx.send(f"You are about to delete {amount} message, are you sure you'd like to continue (Y/N)?")
+                            accepted = ["yes", "no", "y", "n"]
+                            try:
+                                confirm = await self.client.wait_for(
+                                            "message",
+                                            timeout=20,
+                                            check=lambda message: message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in accepted)
+                            except asyncio.TimeoutError:
+                                await ctx.send("Clear command timed out", delete_after=10)
+                            positives = ["yes", "y"]
+                            negatives = ["no", "n"]
+                            if confirm.content.lower() in positives:
+                                await ctx.channel.purge(limit=amount + 1)
+                            elif confirm.content.lower() in negatives:
+                                await ctx.send("Clear command was cancelled", delete_after=10)
+                        else:
+                            await ctx.send(f"```Mass clearing is limited to Administrators only!\n{text}```")
                     else:
                         await ctx.channel.purge(limit=amount + 1)
             else:
@@ -95,28 +163,19 @@ if the command is not in the channel, please specify the channel"""
                             else:
                                 await ctx.send(f"Unable to find channel\n{text}")
         else:
-            await ctx.send("You cannot use this command!")
+            await ctx.send(f"You do not have sufficient permissions\n{text}")
 
-    @commands.command(pass_context=True, name="unban", description="Unbans a user")
-    @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, *, member):
-        banned_users = await ctx.guild.bans()
-        member_name, member_discriminator = member.split('#')
-        if commands.has_permissions(ban_members=True):
-            for ban_entry in banned_users:
-                user = ban_entry.user
-
-                if (user.name, user.discriminator) == (member_name, member_discriminator):
-                    await ctx.guild.unban(user)
-                    await ctx.send(f'{user.mention} was unbanned')
-                    return
+    @clear.error
+    async def clear_error(self, ctx, error):
+        text = """Usage: ./clear [Amount/ID] (channel)
+if the command is not in the channel, please specify the channel"""
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"You do not have sufficient permissions\n```{text}```")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send("An error has occured, likely the bot is missing permissions")
         else:
-            await ctx.send('You are not allowed to run that command')
+            raise
 
-    @unban.error
-    async def unban_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send('I could not find that user')
 
     @commands.command(name="userinfo", aliases=['user', 'memberinfo'], description="Gathers information on a user")
     async def userinfo(self, ctx, *, member: discord.Member):
