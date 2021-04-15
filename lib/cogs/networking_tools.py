@@ -8,7 +8,7 @@ from pygicord import Paginator
 
 def validate_ip(s):
     if s is not None:
-        restricted = ["192.16", "173.16", "172.31", "127.0."]
+        restricted = ["192.16", "173.16", "172.31", "127.0.", "0.0.0."]
         a = s.split('.')
         if len(a) != 4:
             return False
@@ -62,11 +62,10 @@ async def whois_f(domain):
     return output
 
 async def payloadgen(ctx, payload, ip, port):
-    print(ctx.author.id)
     args = f"msfvenom -p {payload} LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_payload.txt"
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await cmd.communicate()
-    print(stdout)
+
 async def nmap_scan(scantype, ip, ports=""):
     scanner = aionmap.PortScanner()
     if ports != "":
@@ -447,7 +446,7 @@ CVE info from: https://cve.circl.lu/
         if check is True:
             if validate_ip(ip) is True:
                 result = await whois_f(domain)
-                if len(result) <= 5994:
+                if len(result) <= 1994:
                     await ctx.send(f"```{result}```")
                 else:
                     now = datetime.now()
