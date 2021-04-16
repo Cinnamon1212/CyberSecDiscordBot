@@ -22,7 +22,6 @@ class AI(commands.Cog):
         r = requests.get(attachment_url)
         with open(f"./AI/{ctx.author.id}_{attachment_name}", "wb") as f:
             f.write(r.content)
-        f.close()
         path_to_image = f"./AI/{ctx.author.id}_{attachment_name}"
         await facedetect_f(ctx, attachment_name, path_to_image)
         await ctx.send(file=discord.File(path_to_image))
