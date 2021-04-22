@@ -12,10 +12,10 @@ To Do list:
 * Tidy code/Remove clutter
 
 Recent changes:
-* Added Whois
-* Remade passgen to prevent users from generating large amounts of passwords
-* Remade msfvenom command to allow all payloads, using regex to validate the payload
-* Added conversion cog (./texto and ./QRGen)
+* Added LICENSE.txt
+* Added ./vote command
+* Fixed ./cvesearch latest
+* Remove ./botinfo and added info to ./stats
 * Fixed tor stats to ./stats
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
