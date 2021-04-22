@@ -6,10 +6,9 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Beta 2.0"
+version = "Beta 3.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
-torversion = subprocess.check_output("tor --version", shell=True)
-torversion = torversion.decode("utf-8")
+torversion = subprocess.check_output("tor --version", shell=True).decode()
 
 class misc(commands.Cog):
     def __init__(self, client):
@@ -38,19 +37,6 @@ Latency: {round(self.client.latency * 1000)} ms
     @commands.command(name="latency", aliases=['botping', 'bping'], description="Tests the latency of the bot")
     async def ping(self, ctx):
         await ctx.send(f'Pong! {round(self.client.latency * 1000)} ms')
-
-    @commands.command(name="botinfo", aliases=["bot", "botversion"], description="Returns information on the bot")
-    async def version(self, ctx):
-        embed=Embed(title=f"Information on {self.client.user}",
-                    colour=discord.Colour.random())
-        embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.add_field(name="Version: ", value=version, inline=False)
-        embed.add_field(name="Number of servers: ", value=f"{len(self.client.guilds)}", inline=False)
-        embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot", inline=False)
-        embed.add_field(name="Support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
-        embed.set_footer(text=f"Creator: {owner}")
-        await ctx.send(embed=embed)
-
 
     @commands.command(name="listofroles", description="Gives a list of roles", aliases=["roles", "serverroles"])
     async def listofroles(self, ctx):
@@ -87,7 +73,7 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.set_footer(text="Feel free to check out my other projects on Github!\nAll donations are appreciated and support the bot, as well as other projects!")
         await ctx.send(embed=embed)
 
-    @commands.command(name="stats", description="Bot statistics", aliases=["statistics", "botstats"])
+    @commands.command(name="stats", description="Bot statistics", aliases=["statistics", "botstats", "botinfo", "bot", "version"])
     async def stats(self, ctx):
         current_time = time.time()
         difference = int(round(current_time - start_time))
@@ -96,6 +82,7 @@ Latency: {round(self.client.latency * 1000)} ms
                     colour=discord.Colour.random())
         embed.set_thumbnail(url=self.client.user.avatar_url)
         embed.add_field(name="Uptime: ", value=text, inline=False)
+        embed.add_field(name="Version: ", value=version, inline=False)
         embed.add_field(name="Number of servers: ", value=len(self.client.guilds), inline=False)
         embed.add_field(name="Online users: ", value=str(len({m.id for m in self.client.get_all_members() if m.status is not discord.Status.offline})), inline=False)
         embed.add_field(name="Total users: ", value=len(self.client.users), inline=False)
@@ -104,6 +91,8 @@ Latency: {round(self.client.latency * 1000)} ms
         if cached == 1000:
             cached = "Max"
         embed.add_field(name="Number of cached messages: ", value=cached, inline = False)
+        embed.add_field(name="Support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
+        embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot", inline=False)
         embed.add_field(name="OS: ", value=platform.platform(), inline=False)
         process = psutil.Process(os.getpid())
         embed.add_field(name="Memory usage: ", value=f"{round(process.memory_info().rss / 1024 ** 2, 2)} Mbs", inline=False)
@@ -121,9 +110,20 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.set_thumbnail(url=self.client.user.avatar_url)
         embed.add_field(name="Invite the bot to your server: ", value="https://bit.ly/3fGmftl", inline=False)
         embed.add_field(name="Join the support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
-        mtime = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
+        dtime = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + dtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
+
+
+    @commands.command(name="vote", description="Vote for the bot on top.gg", aliases=["top.gg", "topgg"])
+    async def vote(self, ctx):
+        embed = Embed(title="All votes are appreciated!", colour=discord.Colour.random())
+        embed.add_field(name="Top.gg", value="[vote](https://top.gg/bot/766312320589627463/vote)")
+        dtime = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + dtime.strftime("%d/%m/%y %X"))
+        await ctx.send(embed=embed)
+
+
 
 def setup(client):
     client.add_cog(misc(client))
