@@ -1,4 +1,4 @@
-import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio, math, pprint
+import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio, math
 from socket import gaierror
 from datetime import datetime
 from discord import Embed, colour
@@ -292,18 +292,17 @@ Requested by: {ctx.author.name}
 
     @commands.command(name="cvesearch", description="Search CVEs on https://cve.circl.lu/", alises=["cveid", "cvelookup"])
     async def cvesearch(self, ctx, search_type=None, query=""):
-        pp = pprint.PrettyPrinter(indent=4)
         text = """
-Usage: ./cvesearch [search type] (query)
+    Usage: ./cvesearch [search type] (query)
 
-CVE Options:
-latest - fetch latest CVE # Returns latest CVE
-browse - browse vendors (Microsoft) # returns list of vendor products
-id - fetch CVE by ID (CVE-2014-0160)
-search - search for a CVE (microsoft/office) # Not working, try ./exDB [query]
-dbinfo - Returns a list of database updates
+    CVE Options:
+    latest - fetch latest CVE # Returns latest CVE
+    browse - browse vendors (Microsoft) # returns list of vendor products
+    id - fetch CVE by ID (CVE-2014-0160)
+    search - search for a CVE (microsoft/office) # Not working, try ./exDB [query]
+    dbinfo - Returns a list of database updates
 
-CVE info from: https://cve.circl.lu/
+    CVE info from: https://cve.circl.lu/
         """
         if search_type is None:
             await ctx.send(f"```{text}```")
@@ -329,37 +328,49 @@ CVE info from: https://cve.circl.lu/
                         if r.status == 200:
                             data = await r.json()
                             last = data[0]
-                            embed = Embed(title=last['id'], description=f"Published: {last['Published']}", colour=discord.Colour.random())
-                            if last['cvss'] is not None:
-                                embed.add_field(name="Vulnerability score: ", value=last['cvss'])
-                            else:
-                                embed.add_field(name="Vulnerability score: ", value="Unknown")
-                            impact = last['impact']
-                            if impact == {}:
-                                embed.add_field(name="Impact: ", value="Unknown", inline=False)
-                            else:
-                                embed.add_field(name="Impact: ",
-                                                value=f"Availability: {impact['availability']}\nConfidentiality: {impact['confidentiality']}\nIntegrity: {impact['integrity']}")
-                            access = last['access']
-                            if access == {}:
-                                embed.add_field(name="Access: ", value="Unknown", inline=False)
-                            else:
-                                embed.add_field(name="Access: ",
-                                                value=f"Auth: {access['authentication']}\nComplexity: {access['complexity']}\nVector: {access['vector']}")
                             product = last['vulnerable_product']
-                            if product == []:
-                                embed.add_field(name="Product: ", value="Unknown", inline=False)
-                            else:
-                                prod_end = math.ceil(len(product)) / 2
-                                embed.add_field(name="Product(s): ", value=product[0:int(prod_end)], inline=False)
+                            prod_end = math.ceil(len(product)) / 2
+                            products = product[0:int(prod_end)]
+                            if products == []:
+                                products = "N/A"
+                            impact = last['impact']
+                            access = last['access']
                             ref = last['references']
                             ref = ref[0:3]
                             ref = "\n".join(ref)
-                            embed.add_field(name="References: ", value=ref, inline=False)
                             summary = last['summary']
                             summary = "".join(summary)
-                            embed.add_field(name="Summary: ", value=summary)
-                            await ctx.send(embed=embed)
+                            CVEReport = f"""
+CVE {last['id']} ({last['Published']})
+
+Vulnerability score: {last['cvss']}
+Impact:
+    Availability: {impact['availability']}
+    Confidentiality: {impact['confidentiality']}
+    Integrity: {impact['integrity']}
+
+Access:
+    Auth: {access['authentication']}
+    Complexity: {access['complexity']}
+    Vector: {access['vector']}
+
+Product(s):
+    {products}
+
+References:
+    {ref}
+
+Summary:
+{summary} """
+                            if len(CVEReport) <= 1994:
+                                await ctx.send(f"```{CVEReport}```")
+                            else:
+                                filename = f"./CVEReports/{ctx.author.id}.txt"
+                                with open(filename, 'a') as f:
+                                    f.write(CVEReport)
+                                f.close()
+                                await ctx.author.send(file=discord.File(filename))
+                                os.remove(filename)
                         else:
                             await ctx.send(f"```There was an error while fetching the latest CVEs\n{text}```")
                 else:
