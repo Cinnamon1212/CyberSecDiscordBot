@@ -3,10 +3,18 @@ from discord import Embed
 from discord.ext import commands
 from aiohttp import request
 
-with open('secrets.json', 'r') as secrets:
-    data = secrets.read()
-secrets = json.loads(data)
-geniustoken = secrets['genius']
+
+def GetFacts():
+    with open('uselessfacts.txt', 'r') as facts:
+        uselessfacts = facts.read()
+    uselessfacts = uselessfacts.split("\n")
+    return uselessfacts
+
+def GetLinuxJokes():
+    with open("linuxjokes.txt") as jokes:
+        linux_jokes = jokes.read()
+    linux_jokes = linux_jokes.split("\n")
+    return linux_jokes
 
 def clean_string(string):
     string = re.sub('@', '@\u200b', string)
@@ -16,6 +24,8 @@ def clean_string(string):
 class fun(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.uselessfacts = GetFacts()
+        self.linux_jokes = GetLinuxJokes()
 
     @commands.command(name="eightball", aliases=['8B', '8ball'], description="A magic 8 ball command!")
     async def eightball(self, ctx, *, question):
@@ -36,7 +46,7 @@ class fun(commands.Cog):
                      'My sources say no.',
                      'Outlook not so good.',
                      'I doubt it.']
-        await ctx.send(f'Question: {question}\nAnswer: {random.choice(responses)}')
+        await ctx.send(f"```{random.choice(responses)}```")
 
     @eightball.error
     async def _8b_error(self, ctx, error):
@@ -65,23 +75,18 @@ class fun(commands.Cog):
             raise
 
     @commands.command(name="slap", description="Slaps a player of your choice!")
-    async def slap(self, ctx, member: discord.Member, *, reason='no reason'):
-
-        memberid = member.id
-        memberexists = ctx.guild.get_member(memberid)
-        if memberexists is None:
-            await ctx.send("This user does not exist in the server!")
+    async def slap(self, ctx, member: discord.Member = None, *, reason='no reason'):
+        text = "Usage: ./slap [member] (reason)"
+        if member is None:
+            await ctx.send(f"```{text}```")
         else:
-            await ctx.send(f"{member.mention} was slapped for {reason}")
+            memberid = member.id
+            memberexists = ctx.guild.get_member(memberid)
+            if memberexists is None:
+                await ctx.send(f"This user does not exist in the server!\n{text}")
+            else:
+                await ctx.send(f"{member.mention} was slapped for {reason}")
 
-    @slap.error
-    async def slap_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a member")
-        elif isinstance(error, commands.MemberNotFound):
-            await ctx.send("Discord member does not exist!")
-        else:
-            raise
 
     @commands.command(name="echo", aliases=['say'], description="echoes message to a specified channel")
     async def echo(self, ctx, destination: discord.TextChannel = None, *, msg: str):
@@ -107,11 +112,9 @@ class fun(commands.Cog):
             raise
 
     @commands.command(name="animalfact", aliases=["animalfacts"],description="Random animal facts!")
-
     async def animal_fact(self, ctx, animal: str):
         """ Available animals: Dog, cat, panda, fox, bird and koala. """
-        animal = animal.lower()
-        if animal in ("dog", "cat", "panda", "fox", "bird", "koala"):
+        if (animal := animal.lower()) in ("dog", "cat", "panda", "fox", "bird", "koala"):
             URL = f"https://some-random-api.ml/facts/{animal}"
             image_link = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
             async with request("GET", image_link, headers={}) as response:
@@ -119,7 +122,7 @@ class fun(commands.Cog):
                     data = await response.json()
                     image_link = data["link"]
                 else:
-                    image = None
+                    image_link = None
             async with request("GET", URL, headers={}) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -142,39 +145,16 @@ class fun(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please enter an animal out of: Dog, cat, panda, fox, bird and koala. ")
 
-    @commands.command("lyrics", description="Searches genius for song lyrics", aliases=["genius"])
-    async def lyrics(self, ctx, *, song: str):
-        genius = lyricsgenius.Genius(geniustoken)
-        song = genius.search_song(song)
-        try:
-            if len(song.lyrics) < 2000:
-                await ctx.send(f"```{song.lyrics}```")
-            else:
-                filename = f"{song.id}_{ctx.author.id}.txt"
-                with open(filename, "x") as f:
-                    f.writelines(song.lyrics)
-                f.close()
-                await ctx.send("Here are the song lyrics: ")
-                await ctx.send(file=discord.File(filename))
-                os.remove(filename)
-        except HTTPError as e:
-            await ctx.send(f"Unable to fetch lyrics for {song}")
-            print(e.errno)
-            print(e.args[0])
-            print(e.args[1])
-        except AttributeError as e:
-            print(e)
-            await ctx.send(f"Could not fetch lyrics for {song}")
-        except Timeout:
-            await ctx.send("Lyrics command timed out")
+    @commands.command(name="uselessfact", aliases=["useless", "randomfact"], description="Ramdom fact")
+    async def useless_fact(self, ctx):
+        fact = random.choice(self.uselessfacts)
+        await ctx.send(f"```{fact}```")
 
-
-    @lyrics.error
-    async def lyrics_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a song name")
-        else:
-            print(error)
+    @commands.command(name="linuxjoke", description="Random Linux joke", aliases=["ljoke"])
+    async def linuxjokes(self, ctx):
+        joke = random.choice(self.linux_jokes)
+        joke = joke.split("¦")
+        await ctx.send(f"```{joke[0].strip()}\n{joke[1].strip()}```")
 
 def setup(client):
     client.add_cog(fun(client))
