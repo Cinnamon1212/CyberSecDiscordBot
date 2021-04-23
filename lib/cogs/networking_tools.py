@@ -1,4 +1,4 @@
-import discord, os, requests, string, passgen, subprocess, socket, json, time, aionmap, re, asyncio, math
+import discord, os, requests, passgen, socket, json, time, aionmap, re, asyncio, math, aiofiles
 from socket import gaierror
 from datetime import datetime
 from discord import Embed, colour
@@ -33,7 +33,6 @@ def validate_port(s):
         s = int(s)
     except ValueError:
         return False
-
     if s <= 65535:
         return True
     else:
@@ -250,16 +249,15 @@ Finish time: {finish['timestr']} (Elapsed: {finish['elapsed']})
 Requested by: {ctx.author.name}
                 """
                 filename = f"./scans/{results.started}_{ctx.author.id}.txt"
-                with open(filename, 'a') as f:
-                    f.write(strtosend)
-                f.close()
+                async with aiofiles.open(filename, 'a') as f:
+                    await f.write(strtosend)
                 await ctx.author.send(file=discord.File(filename))
                 os.remove(filename)
 
     @nmapscan.error
     async def scan_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("```Usage: ./nmap [scantype] [ip] (port)```")
+            await ctx.send("```Usage: ./nmap [scantype] [ip] (port)\nAvailable scan types: -sT, -sV```")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f"The nmap command is on cooldown, please try again in: {error.retry_after:.2f}s")
         else:
@@ -293,16 +291,16 @@ Requested by: {ctx.author.name}
     @commands.command(name="cvesearch", description="Search CVEs on https://cve.circl.lu/", alises=["cveid", "cvelookup"])
     async def cvesearch(self, ctx, search_type=None, query=""):
         text = """
-    Usage: ./cvesearch [search type] (query)
+Usage: ./cvesearch [search type] (query)
 
-    CVE Options:
-    latest - fetch latest CVE # Returns latest CVE
-    browse - browse vendors (Microsoft) # returns list of vendor products
-    id - fetch CVE by ID (CVE-2014-0160)
-    search - search for a CVE (microsoft/office) # Not working, try ./exDB [query]
-    dbinfo - Returns a list of database updates
+CVE Options:
+latest - fetch latest CVE # Returns latest CVE
+browse - browse vendors (Microsoft) # returns list of vendor products
+id - fetch CVE by ID (CVE-2014-0160)
+search - search for a CVE (microsoft/office) # Not working, try ./exDB [query]
+dbinfo - Returns a list of database updates
 
-    CVE info from: https://cve.circl.lu/
+CVE info from: https://cve.circl.lu/
         """
         if search_type is None:
             await ctx.send(f"```{text}```")
@@ -366,9 +364,8 @@ Summary:
                                 await ctx.send(f"```{CVEReport}```")
                             else:
                                 filename = f"./CVEReports/{ctx.author.id}.txt"
-                                with open(filename, 'a') as f:
-                                    f.write(CVEReport)
-                                f.close()
+                                async with aiofiles.open(filename, 'a') as f:
+                                    await f.write(CVEReport)
                                 await ctx.author.send(file=discord.File(filename))
                                 os.remove(filename)
                         else:
@@ -380,22 +377,27 @@ Summary:
                     async with request("GET", f"https://cve.circl.lu/api/browse/{query}", headers={}) as r:
                         if r.status == 200:
                             data = await r.json()
-                            products = data['product']
-                            embed = Embed(title=f"Browse results for {query}", colour=discord.Colour.random())
-                            x = 1
-                            i = 0
-                            while i != 25:
-                                try:
-                                    z = products[i]
-                                    embed.add_field(name=f"Product #{x}", value=z, inline=False)
-                                    x += 1
-                                    i += 1
-                                except IndexError:
-                                    break
-                            embed.set_footer(text="CVE results from https://cve.circl.lu/")
-                            await ctx.send(embed=embed)
                         else:
+                            data = None
                             await ctx.send(f"```There was an error while browsing for {query}\n{text}```")
+                        if data is not None:
+                            if 'product' in data:
+                                products = data['product']
+                                embed = Embed(title=f"Browse results for {query}", colour=discord.Colour.random())
+                                x = 1
+                                i = 0
+                                while i != 25:
+                                    try:
+                                        z = products[i]
+                                        embed.add_field(name=f"Product #{x}", value=z, inline=False)
+                                        x += 1
+                                        i += 1
+                                    except IndexError:
+                                        break
+                                embed.set_footer(text="CVE results from https://cve.circl.lu/")
+                                await ctx.send(embed=embed)
+                            else:
+                                await ctx.send(f"```Unable to find a result for {query}\n{text}```")
                 elif search_type == "id":
                     async with request("GET", f"https://cve.circl.lu/api/cve/{query}", headers={}) as r:
                         if r.status == 200:
@@ -462,9 +464,8 @@ Summary:
                 else:
                     now = datetime.now()
                     filename = f"./whois/{now}_{ctx.author.id}.txt"
-                    with open(filename, 'a') as f:
-                        f.write(result)
-                    f.close()
+                    async with aiofiles.open(filename, 'a') as f:
+                        await f.write(result)
                     await ctx.send(file=discord.File(filename))
                     os.remove(filename)
             else:
