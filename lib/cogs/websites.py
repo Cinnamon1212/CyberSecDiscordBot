@@ -1,7 +1,6 @@
-import discord, os, requests, json, urllib3, exiftool, subprocess, faker
+import discord, os, requests, json, exiftool, faker, aiofiles
 import async_imgkit.api as imgkit
 from faker.providers import bank, credit_card, phone_number
-from bs4 import BeautifulSoup
 from discord import Embed, colour
 from discord.ext import commands
 from aiohttp import request
@@ -20,8 +19,9 @@ async def webss_f(ctx, url):
     await ctx.send("Attempting to grab the web page, some pages may block tor connections")
     try:
         await imgkit.from_url(url, f'./webpages/{ctx.author.id}.jpg')
-    except:
-        await ctx.send("There was an error while rendering the site")
+    except imgkit.IOError:
+        pass
+
 class websites(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -82,7 +82,7 @@ class websites(commands.Cog):
                 embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
                 await ctx.send(embed=embed)
             elif response.status == 400:
-                await ctx.send(f"That's not an email!\nUsage: ./emailchecker [email]")
+                await ctx.send("That's not an email!\nUsage: ./emailchecker [email]")
             else:
                 await ctx.send("There was an issue with the API!")
                 print(f"API returned {response.status}")
@@ -90,7 +90,7 @@ class websites(commands.Cog):
     @emailchecker.error
     async def emailchecker_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Usage: ./emailchecker [email]")
+            await ctx.send("```Usage: ./emailchecker [email]```")
         else:
             raise
 
@@ -112,55 +112,62 @@ class websites(commands.Cog):
 
     @commands.command(name="exiftool", description="File information", aliases=["filedata", "fileinfo"])
     async def exiftool(self, ctx):
-        attachment_name = ctx.message.attachments[0].filename
-        attachment_url = ctx.message.attachments[0].url
-        r = requests.get(attachment_url)
-        with open(f"./exiftool/{ctx.author.id}_{attachment_name}", "wb") as f:
-            f.write(r.content)
-        f.close()
-        with exiftool.ExifTool() as et:
-            metadata = et.get_metadata(f"./exiftool/{ctx.author.id}_{attachment_name}")
-        metadata = json.dumps(metadata, indent=4, sort_keys=True)
-        if len(str(metadata)) < 2000:
-            await ctx.send(f"""```json
-{metadata}```""")
-            os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")
+        if not ctx.message.attachments:
+            await ctx.send("```Usage: ./exiftool // Attach a file to the message```")
         else:
-            with open(f"./exiftool/{ctx.author.id}_{attachment_name}.txt", "x") as f:
-                f.write(metadata)
-                await ctx.send(file=discord.File(f"./exiftool/{ctx.author.id}_{attachment_name}.txt"))
+            attachment_name = ctx.message.attachments[0].filename
+            attachment_url = ctx.message.attachments[0].url
+            r = requests.get(attachment_url)
+            with open(f"./exiftool/{ctx.author.id}_{attachment_name}", "wb") as f:
+                f.write(r.content)
+            f.close()
+            with exiftool.ExifTool() as et:
+                metadata = et.get_metadata(f"./exiftool/{ctx.author.id}_{attachment_name}")
+            metadata = json.dumps(metadata, indent=4, sort_keys=True)
+            if len(str(metadata)) < 2000:
+                await ctx.send(f"""```json
+    {metadata}```""")
                 os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")
-                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}.txt")
+            else:
+                async with aiofiles.open(f"./exiftool/{ctx.author.id}_{attachment_name}.txt", mode="x") as f:
+                    await f.write(metadata)
+                await ctx.send(file=discord.File(f"./exiftool/{ctx.author.id}_{attachment_name}.txt"))
+                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")  # Removes provided file
+                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}.txt")  # Removes exiftool output
 
     @commands.command(name="RedirectChaser", description="Finds all redirects associated with a link", aliases=["Wheregoes", "RedirectChecker"])
-    async def redirectchaser(self, ctx, url: str):
-        try:
-            response = requests.get(url)
-        except requests.ConnectionError as exception:
-            await ctx.send("Invalid URL")
-        urls = []
-        for url_redirects in chase_redirects(url):
-            urls.append(url_redirects)
-        embed = Embed(title=f"Redirects for {url}",
-                      colour=discord.Colour.random())
-        num = 1
-        for url in urls:
-            embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
-            num += 1
-        await ctx.send(embed=embed)
+    async def redirectchaser(self, ctx, url=None):
+        text = "Usage: ./wheregoes [URL]"
+        if url is None:
+            await ctx.send(f"```{text}```")
+        else:
+            try:
+                requests.get(url)
+            except requests.ConnectionError:
+                await ctx.send(f"Unable to connect to {url}\n{text}")
+            urls = []
+            for url_redirects in chase_redirects(url):
+                urls.append(url_redirects)
+            embed = Embed(title=f"Redirects for {url}",
+                          colour=discord.Colour.random())
+            num = 1
+            for url in urls:
+                embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
+                num += 1
+            await ctx.send(embed=embed)
 
     @commands.command(name="WebScreenshot", description="Takes a screenshot of a URL", aliases=["WebSS", "GrabPage"])
-    async def WebScreenshot(self, ctx, url: str):
-        await webss_f(ctx, url)
-        await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.jpg"))
-        os.remove(f"./webpages/{ctx.author.id}.jpg")
-
-    @WebScreenshot.error
-    async def webss_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please provide a url")
+    async def WebScreenshot(self, ctx, url=None):
+        if url is None:
+            await ctx.send("```Usage: ./webss [URL] ```")
         else:
-            raise
+            await webss_f(ctx, url)
+            try:
+                await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.jpg"))
+            except:
+                await  ctx.send(f"Unable to render {url}!")
+            os.remove(f"./webpages/{ctx.author.id}.jpg")
+
 
 
 def setup(client):
