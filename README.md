@@ -4,7 +4,6 @@ A cyber security discord bot with featuring networking, hacking and website util
 
 To Do list:  
 * Create usage string for all commands (Usage ./(command) [required] (optional)
-* Add more network utils (Banner grabbing, more nmap scan types, capture file analysis)
 * Add more cryptography tools (more hashes, encoding, morse code, etc)
 * Add more web page utils (url shortener)
 * Add AI chat bot
@@ -15,8 +14,8 @@ Recent changes:
 * Added LICENSE.txt
 * Added ./vote command
 * Fixed ./cvesearch latest
-* Remove ./botinfo and added info to ./stats
-* Fixed tor stats to ./stats
+* Added owner commands ([bot.py](https://github.com/Cinnamon1212/CyberSecDiscordBot/blob/main/lib/bot.py))
+* Added ./donate
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
