@@ -1,7 +1,7 @@
 import discord, os, json
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
-client = commands.Bot(command_prefix='.//', case_insensitive=True,
+client = commands.Bot(command_prefix='./', case_insensitive=True,
                       intents=discord.Intents.all())
 
 with open('secrets.json', 'r') as secrets:
