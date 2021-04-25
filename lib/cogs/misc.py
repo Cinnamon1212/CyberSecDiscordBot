@@ -6,7 +6,7 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Beta 3.0"
+version = "Beta 3.1"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 torversion = subprocess.check_output("tor --version", shell=True).decode()
 
@@ -114,7 +114,6 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.set_footer(text=f"Asked by {ctx.author.name} " + dtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 
-
     @commands.command(name="vote", description="Vote for the bot on top.gg", aliases=["top.gg", "topgg"])
     async def vote(self, ctx):
         embed = Embed(title="All votes are appreciated!", colour=discord.Colour.random())
@@ -123,6 +122,13 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.set_footer(text=f"Asked by {ctx.author.name} " + dtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
 
+    @commands.command(name="donate", description="Make a bitcoin/patreon donation", aliases=["donation"])
+    async def donate(self, ctx):
+        embed = Embed(title="All donations are appreciated :)")
+        embed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Patreon: ", value="[Link](https://www.patreon.com/cinnamon1212)", inline=False)
+        embed.add_field(name="Bitcoin: ", value="bc1q9ery77lperksj6fc0thedp5vkj33vfsqx8880xu3t44r3hexnsfshlzve0", inline=False)
+        await ctx.send(embed=embed)
 
 
 def setup(client):
