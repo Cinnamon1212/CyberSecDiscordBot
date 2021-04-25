@@ -6,6 +6,7 @@ from discord.ext import commands
 from aiohttp import request
 from pygicord import Paginator
 
+
 def validate_ip(s):
     if s is not None:
         restricted = ["192.16", "173.16", "172.31", "127.0.", "0.0.0."]
@@ -28,6 +29,7 @@ def validate_ip(s):
             else:
                 return True
 
+
 def validate_port(s):
     try:
         s = int(s)
@@ -38,6 +40,7 @@ def validate_port(s):
     else:
         return False
 
+
 async def ping_f(ip, count):
     args = f"ping -c {count} {ip}"
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -45,12 +48,14 @@ async def ping_f(ip, count):
     output = str(stdout, 'utf-8')
     return output
 
+
 async def dig_f(ip):
     args = f"dig {ip}"
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await cmd.communicate()
     output = str(stdout, 'utf-8')
     return output
+
 
 async def whois_f(domain):
     args = f"whois {domain}"
@@ -60,10 +65,12 @@ async def whois_f(domain):
     print(output)
     return output
 
+
 async def payloadgen(ctx, payload, ip, port):
     args = f"msfvenom -p {payload} LHOST={ip} LPORT={port} -o ./payloads/{ctx.author.id}_payload.txt"
     cmd = await asyncio.create_subprocess_shell(args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await cmd.communicate()
+
 
 async def nmap_scan(scantype, ip, ports=""):
     scanner = aionmap.PortScanner()
@@ -75,6 +82,22 @@ async def nmap_scan(scantype, ip, ports=""):
     else:
         result = await scanner.scan(ip, None, scantype, sudo=False)
         return result
+
+
+async def bannergrab_f(ip, port):
+    try:
+        r, w = await asyncio.open_connection(ip, port)
+    except asyncio.exceptions.TimeoutError:
+        return "target timed out"
+    except ConnectionRefusedError:
+        return "port closed"
+    banner = await r.read(1024)
+    w.close()
+    if banner.decode().strip() == "":
+        return "Port did not return a banner"
+    else:
+        return banner.decode().strip()
+
 
 class networkingtools(commands.Cog):
     def __init__(self, client):
@@ -470,6 +493,33 @@ Summary:
                     os.remove(filename)
             else:
                 await ctx.send(f"The domain returned an invalid IP!\n{text}")
+
+    @commands.command(name="bannergrab", description="Grabs a banner from a port", aliases=["servicescan"])
+    async def bannergrab(self, ctx, ip=None, port=None):
+        text = "Usage: ./bannergrab [IP] [Port]"
+        if ip is None or port is None:
+            await ctx.send(f"```{text}```")
+        else:
+            try:
+                ip = socket.gethostbyname(ip)
+                if validate_ip(ip) is True:
+                    if validate_port(port) is True:
+                        banner = await bannergrab_f(ip, port)
+                        negatives = ["Port did not return a banner", "port closed", "target timed out"]
+                        if banner in negatives:
+                            response = f"""```diff
+- {ip}:{port}:{banner} ```"""
+                        else:
+                            response = f"""```diff
++ {ip}:{port}:{banner} ```"""
+                        await ctx.send(f"{response}")
+                    else:
+                        await ctx.send(f"```Invalid port selected\n{text}```")
+                else:
+                    await ctx.send(f"```Invalid IP\n{text}```")
+            except socket.gaierror:
+                await ctx.send(f"```Unable to connect to IP\n{text}```")
+
 
 def setup(client):
     client.add_cog(networkingtools(client))
