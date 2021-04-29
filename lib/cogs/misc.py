@@ -6,7 +6,7 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Beta 3.1"
+version = "Beta 3.2"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 torversion = subprocess.check_output("tor --version", shell=True).decode()
 
