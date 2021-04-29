@@ -46,12 +46,12 @@ class fun(commands.Cog):
                      'My sources say no.',
                      'Outlook not so good.',
                      'I doubt it.']
-        await ctx.send(f"```{random.choice(responses)}```")
+        await ctx.send(f"```\n{random.choice(responses)}```")
 
     @eightball.error
     async def _8b_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter a question")
+            await ctx.send("```Please enter a question\nUsage: ./8b [question]```")
         else:
             raise
 
