@@ -1,10 +1,13 @@
-import discord, math, re
+import discord, math, re, cmath, aiofiles, os
 from enum import Enum
 from dataclasses import dataclass
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+from datetime import datetime
+from pylatexenc.latex2text import LatexNodes2Text
+from pylatexenc.latexwalker import LatexWalkerError
 from discord.ext import commands
 from discord import Embed
-
 WHITESPACE = [' ', '\n' '\t']
 DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
@@ -26,6 +29,11 @@ def findnumbers(numbers):
             except ValueError:
                 pass
     return numbers
+
+def getSize(txt, font):
+    Img = Image.new('RGB', (1, 1))
+    drawn = ImageDraw.Draw(Img)
+    return drawn.textsize(txt, font)
 
 class TokenType(Enum):
     NUMBER = 0
@@ -85,7 +93,7 @@ class Lexer:
                 self.advance()
                 yield Token(TokenType.RPAREN)
             else:
-                raise exception(f"Illegal character '{self.current_char}'")
+                raise Exception(f"Illegal character '{self.current_char}'")
 
     def generate_number(self):
         decimal_count = 0
@@ -278,10 +286,10 @@ Supported operations:
                 interpreter = Interpreter()
                 value = interpreter.visit(tree)
                 print(value)
-                await ctx.send(value)
+                await ctx.send(f"```{value}```")
             except Exception as e:
                 print(e)
-                await ctx.send(f"There was an error while performing your calculation: {e}")
+                await ctx.send(f"```There was an error while performing your calculation: {e}\n{text}```")
 
     @commands.command(name="StandardDeviation", description="Standard deviation of values", aliases=["std"])
     async def std(self, ctx, *, numbers):
@@ -315,7 +323,7 @@ Usage: ./std [List of numbers]
                 check = True
             except ValueError:
                 check = False
-                await ctx.send(f"```Decimal places must be an intger\n{text}```")
+                await ctx.send(f"```Decimal places must be an integer\n{text}```")
                 raise
             if check is not False:
                 numbers = findnumbers(numbers)
@@ -390,7 +398,7 @@ Usage: ./ceil [list of values]
                 try:
                     numbers = list(map(int, numbers))
                     check = True
-                except:
+                except ValueError:
                     await ctx.send(f"```Numbers must be whole numbers\n{text}```")
                     check = False
                 if check is True:
@@ -399,6 +407,29 @@ Usage: ./ceil [list of values]
                     await ctx.send(f"```{text}```")
             else:
                 await ctx.send(f"```Please enter two numbers\n{text}```")
+
+    @commands.command(name="quadratic", description="Solves quadratic equation", aliases=["solvequadratic"])
+    async def quadratic(self, ctx, a=None, b=None, c=None):
+        text = "Usage: ./quadratic [a] [b] [c]"
+        if a is None or b is None or c is None:
+            await ctx.send(f"```{text}```")
+        else:
+            try:
+                a = int(a)
+                b = int(b)
+                c = int(c)
+                check = True
+            except ValueError:
+                await ctx.send(f"```One or more values were not integers\n{text}```")
+                check = False
+            if a == 0:
+                await ctx.send(f"```Invalid quadratic, 'a' cannot be 0\n{text}```")
+                check = False
+            if check is True:
+                d = (b ** 2) - (4*a*c)
+                s1 = (-b-cmath.sqrt(d))/(2*a)
+                s2 = (-b+cmath.sqrt(d))/(2*a)
+                await ctx.send(f"```The two solutions are: {s1} and {s2}```")
 
 
 def setup(client):
