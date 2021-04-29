@@ -105,8 +105,9 @@ class networkingtools(commands.Cog):
 
     @commands.command(name="iplookup", description="Provides geoinformation on an IP", aliases=["geoip", "ip", "ipinfo"])
     async def nmap(self, ctx, ip=""):
+        text = "Usage: ./iplookup [IP]"
         if ip == "":
-            await ctx.send("Please provide an IP")
+            await ctx.send(f"```Please provide an IP\n{text}```")
         else:
             url = "http://ip-api.com/json/" + ip
             async with request("GET", url, headers={}) as response:
@@ -127,12 +128,11 @@ class networkingtools(commands.Cog):
                         embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
                         await ctx.send(embed=embed)
                     else:
-                        await ctx.send("Could not find IP")
+                        await ctx.send(f"```Could not find {ip}\n{text}```")
                 elif response.status == 429:
-                    await ctx.send("Daily iplookup limit reached")
+                    await ctx.send(f"```Daily iplookup limit reached```")
                 else:
-                    await ctx.send("There was an issue with the API, please try again later!")
-                    print(f" API returned {response.status}")
+                    await ctx.send(f"```There was an issue with the API, please try again later!\n{text}```")
 
     @commands.command(name="dig", description="Dig comamnd, takes a domain or IP")
     async def dig(self, ctx, DNS=""):
@@ -188,7 +188,7 @@ class networkingtools(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(f"```Invalid number of passwords or length\n{text}```")
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please enter the number of passwords and the length")
+            await ctx.send(f"```Please enter the number of passwords and the length\n{text}```")
         else:
             raise
 
@@ -208,7 +208,7 @@ class networkingtools(commands.Cog):
 
 
 
-    @commands.command(name="nmap", description="Performs basic scans using the nmap. The bot will be paused while this runs! ")
+    @commands.command(name="nmap", description="Performs basic scans using the nmap.")
     @commands.cooldown(2, 30, commands.BucketType.user)
     async def nmapscan(self, ctx, scantype: str, ip=None, *, ports=""):
         text = "Usage: ./nmap [scantype] [ip] (port)\nAvailable scan types: -sT, -sV"
