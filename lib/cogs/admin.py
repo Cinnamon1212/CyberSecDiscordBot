@@ -26,7 +26,7 @@ class admin(commands.Cog):
     async def kick_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             text = "Usage: ./kick [member] (reason)"
-            await ctx.send(f"You do not have sufficient permissions to use this command\n```{text}```")
+            await ctx.send(f"```You do not have sufficient permissions to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.send("An error has occured, likely the bot is missing permissions")
         else:
@@ -73,7 +73,7 @@ class admin(commands.Cog):
                     await ctx.guild.unban(user)
                     stop = True
                 except discord.NotFound:
-                    await ctx.send(f"Unable to find a user with the provided ID!\n{text}")
+                    await ctx.send(f```"Unable to find a user with the provided ID!\n{text}```")
                     stop = True
             else:
                 stop = False
@@ -178,22 +178,30 @@ if the command is not in the channel, please specify the channel"""
 
 
     @commands.command(name="userinfo", aliases=['user', 'memberinfo'], description="Gathers information on a user")
-    async def userinfo(self, ctx, *, member: discord.Member):
-        roles = [role for role in member.roles]
-        embed = discord.Embed(colour=member.colour, inline=False)
-        embed.set_author(name=f"User info for {member}")
-        embed.set_thumbnail(url=member.avatar_url)
-        time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-        embed.add_field(name="ID:", value=member.id)
-        embed.add_field(name="Guild name: ", value=member.display_name)
-        embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"))
-        embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"))
-        embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]))
-        embed.add_field(name="Top role:", value=member.top_role.mention)
-        embed.add_field(name="Bot?", value=member.bot)
-        embed.add_field(name="Flags: ", value=member.public_flags)
-        await ctx.send(embed=embed)
+    async def userinfo(self, ctx, *, member: discord.Member=None):
+        text = "Usage: ./userinfo [member]"
+        if member is None:
+            await ctx.send(f"```{text}```")
+        else:
+            roles = [role for role in member.roles]
+            embed = discord.Embed(colour=member.colour)
+            embed.set_author(name=f"User info for {member}")
+            embed.set_thumbnail(url=member.avatar_url)
+            time = ctx.message.created_at
+            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"), inline=False)
+            embed.add_field(name="ID:", value=member.id, inline=False)
+            embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
+            embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+            embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+            embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]), inline=False)
+            embed.add_field(name="Top role:", value=member.top_role.mention, inline=False)
+            embed.add_field(name="Bot?", value=member.bot, inline=False)
+            await ctx.send(embed=embed)
+
+    async def userinfo_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("```User not found\nUsage: ./userinfo [member]```")
+
 
     @commands.command(name="serverinfo", aliases=['server', 'guildinfo'], description="Gathers information of the server")
     async def serverinfo(self, ctx):
@@ -205,11 +213,11 @@ if the command is not in the channel, please specify the channel"""
             description=desc,
             colour=discord.Colour.green())
         embed.set_thumbnail(url=servericon)
-        embed.add_field(name="Owner: ", value=owner, inline=True)
-        embed.add_field(name="ID: ", value=id, inline=True)
-        embed.add_field(name="Region: ", value=region, inline=True)
-        embed.add_field(name="Member count: ", value=f"This server has {membercount} members", inline=True)
-        embed.add_field(name="Roles: ", value=f"This server has {rolecount - 1} roles")
+        embed.add_field(name="Owner: ", value=owner, inline=False)
+        embed.add_field(name="ID: ", value=id, inline=False)
+        embed.add_field(name="Region: ", value=region, inline=False)
+        embed.add_field(name="Member count: ", value=f"This server has {membercount} members", inline=False)
+        embed.add_field(name="Roles: ", value=f"This server has {rolecount - 1} roles", inline=False)
         embed.set_thumbnail(url=ctx.guild.icon_url)
         time = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
