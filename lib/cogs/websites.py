@@ -82,10 +82,9 @@ class websites(commands.Cog):
                 embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
                 await ctx.send(embed=embed)
             elif response.status == 400:
-                await ctx.send("That's not an email!\nUsage: ./emailchecker [email]")
+                await ctx.send("```That's not an email!\nUsage: ./emailchecker [email]```")
             else:
                 await ctx.send("There was an issue with the API!")
-                print(f"API returned {response.status}")
 
     @emailchecker.error
     async def emailchecker_error(self, ctx, error):
