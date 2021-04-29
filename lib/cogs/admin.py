@@ -73,7 +73,7 @@ class admin(commands.Cog):
                     await ctx.guild.unban(user)
                     stop = True
                 except discord.NotFound:
-                    await ctx.send(f```"Unable to find a user with the provided ID!\n{text}```")
+                    await ctx.send(f"```Unable to find a user with the provided ID!\n{text}```")
                     stop = True
             else:
                 stop = False
@@ -161,9 +161,9 @@ if the command is not in the channel, please specify the channel"""
                                 await msg.delete()
                                 await ctx.send("```Message deleted```", delete_after=10)
                             else:
-                                await ctx.send(f"Unable to find channel\n{text}")
+                                await ctx.send(f"```Unable to find channel\n{text}```")
         else:
-            await ctx.send(f"You do not have sufficient permissions\n{text}")
+            await ctx.send(f"```You do not have sufficient permissions\n{text}```")
 
     @clear.error
     async def clear_error(self, ctx, error):
