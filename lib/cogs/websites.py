@@ -1,10 +1,15 @@
 import discord, os, requests, json, exiftool, faker, aiofiles
-import async_imgkit.api as imgkit
 from faker.providers import bank, credit_card, phone_number
 from discord import Embed, colour
 from discord.ext import commands
 from aiohttp import request
+from pyppeteer import launch
+from pyppeteer.errors import PageError
 
+with open('secrets.json', 'r') as secrets:
+    data = secrets.read()
+keys = json.loads(data)
+securitytrailskey = keys['securitytrails']
 
 def chase_redirects(url):
     while True:
@@ -15,12 +20,21 @@ def chase_redirects(url):
         else:
             break
 
-async def webss_f(ctx, url):
+async def webss_f(ctx, url, w, h):
     await ctx.send("Attempting to grab the web page, some pages may block tor connections")
+    UA = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36"
     try:
-        await imgkit.from_url(url, f'./webpages/{ctx.author.id}.jpg')
-    except imgkit.IOError:
-        pass
+        browser = await launch(headless=True)
+        page = await browser.newPage()
+        await page.setViewport({"width": w, "height": h})
+        await page.setUserAgent(UA)
+        await page.goto(url)
+        await page.screenshot({'path': f"./webpages/{ctx.author.id}.png"})
+        await browser.close()
+        return True
+    except PageError:
+        return None
+
 
 class websites(commands.Cog):
     def __init__(self, client):
@@ -132,7 +146,7 @@ class websites(commands.Cog):
                     await f.write(metadata)
                 await ctx.send(file=discord.File(f"./exiftool/{ctx.author.id}_{attachment_name}.txt"))
                 os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")  # Removes provided file
-                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}.txt")  # Removes exiftool output
+                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}.txt")
 
     @commands.command(name="RedirectChaser", description="Finds all redirects associated with a link", aliases=["Wheregoes", "RedirectChecker"])
     async def redirectchaser(self, ctx, url=None):
@@ -156,17 +170,51 @@ class websites(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(name="WebScreenshot", description="Takes a screenshot of a URL", aliases=["WebSS", "GrabPage"])
-    async def WebScreenshot(self, ctx, url=None):
-        if url is None:
-            await ctx.send("```Usage: ./webss [URL] ```")
-        else:
-            await webss_f(ctx, url)
-            try:
-                await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.jpg"))
-            except:
-                await  ctx.send(f"Unable to render {url}!")
-            os.remove(f"./webpages/{ctx.author.id}.jpg")
+    async def WebScreenshot(self, ctx, url=None, width=1920, height=1080):
+        text = """Usage: ./webss [URL] (width) (height)
 
+Default width = 1920
+Default height = 1080
+
+If the page fails to render, try pass the full URL (example: https://www.google.com/)"""
+        if url is None:
+            await ctx.send(f"```{text}```")
+        else:
+            try:
+                width = int(width)
+                height = int(height)
+            except ValueError:
+                await ctx.send(f"```Please pass width and height as numbers.\n{text}```")
+            else:
+                returnvalue = await webss_f(ctx, url, width, height)
+                if returnvalue is None:
+                    await ctx.send(f"```Unable to render {url}!\n{text}```")
+                else:
+                    await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.png"))
+                    os.remove(f"./webpages/{ctx.author.id}.png")
+
+    @commands.command(name="subdomain", description="Find subdomains", aliases=["sdomains"])
+    async def findsubdomains(self, ctx, domain=None):
+        text = "Usage: ./subdomain [domain]"
+        if domain is None:
+            await ctx.send(f"```{text}```")
+        else:
+            url = f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
+            querystring = {"children_only": "false", "include_inactive": "true"}
+            headers = {"Accept": "application/json", "apikey": securitytrailskey}
+            async with request("GET", url, headers=headers, params=querystring) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    Found_Subdomains = data['subdomains']
+                    if len(Found_Subdomains) == 0:
+                        await ctx.send(f"```No subdomain records found!\n{text}```")
+                    else:
+                        subdomains = "First 10 subdomains:"
+                        for sub in Found_Subdomains[:20]:
+                            subdomains += f"\n{sub}.{domain}"
+                        await ctx.send(f"```{subdomains}```")
+                else:
+                    await ctx.send(f"```There was an issue with the API\n{text}```")
 
 
 def setup(client):
