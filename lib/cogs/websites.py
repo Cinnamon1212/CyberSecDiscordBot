@@ -20,21 +20,6 @@ def chase_redirects(url):
         else:
             break
 
-async def webss_f(ctx, url, w, h):
-    await ctx.send("Attempting to grab the web page, some pages may block tor connections")
-    UA = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36"
-    try:
-        browser = await launch(headless=True)
-        page = await browser.newPage()
-        await page.setViewport({"width": w, "height": h})
-        await page.setUserAgent(UA)
-        await page.goto(url)
-        await page.screenshot({'path': f"./webpages/{ctx.author.id}.png"})
-        await browser.close()
-        return True
-    except PageError:
-        return None
-
 
 class websites(commands.Cog):
     def __init__(self, client):
@@ -169,29 +154,6 @@ class websites(commands.Cog):
                 num += 1
             await ctx.send(embed=embed)
 
-    @commands.command(name="WebScreenshot", description="Takes a screenshot of a URL", aliases=["WebSS", "GrabPage"])
-    async def WebScreenshot(self, ctx, url=None, width=1920, height=1080):
-        text = """Usage: ./webss [URL] (width) (height)
-
-Default width = 1920
-Default height = 1080
-
-If the page fails to render, try pass the full URL (example: https://www.google.com/)"""
-        if url is None:
-            await ctx.send(f"```{text}```")
-        else:
-            try:
-                width = int(width)
-                height = int(height)
-            except ValueError:
-                await ctx.send(f"```Please pass width and height as numbers.\n{text}```")
-            else:
-                returnvalue = await webss_f(ctx, url, width, height)
-                if returnvalue is None:
-                    await ctx.send(f"```Unable to render {url}!\n{text}```")
-                else:
-                    await ctx.send(f"Here is a screenshot of: {url}", file=discord.File(f"./webpages/{ctx.author.id}.png"))
-                    os.remove(f"./webpages/{ctx.author.id}.png")
 
     @commands.command(name="subdomain", description="Find subdomains", aliases=["sdomains"])
     async def findsubdomains(self, ctx, domain=None):
