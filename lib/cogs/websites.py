@@ -1,4 +1,6 @@
-import discord, os, requests, json, exiftool, faker, aiofiles
+import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
+import async_imgkit.api as imgkit
+from async_timeout import timeout
 from faker.providers import bank, credit_card, phone_number
 from discord import Embed, colour
 from discord.ext import commands
@@ -177,6 +179,49 @@ class websites(commands.Cog):
                         await ctx.send(f"```{subdomains}```")
                 else:
                     await ctx.send(f"```There was an issue with the API\n{text}```")
+
+    @commands.command(name="webss", description="Screenshot a website", aliases=["webscreenshot"])
+    async def webss(self, ctx, website=None):
+        text = """
+Usage: ./webss [website]
+
+Please pass the full URL, example: https://www.google.com/
+"""
+        regex = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+        if website is None:
+            await ctx.send(f"```{text}```")
+        elif re.search(regex, website) is None:
+            await ctx.send(f"```Invalid URL\n{text}```")
+        else:
+            userAgent = "'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0'"
+            filename = f"./webpages/{ctx.author.id}.png"
+            options = {
+                "format": "png",
+                "custom-header": [
+                    ("User-Agent", userAgent)
+                ],
+                "quiet": ""
+            }
+            try:
+                async with timeout(3):
+                    await imgkit.from_url(website, filename, options=options)
+            except OSError:
+                await ctx.send(f"```Unable to connect to {website}\n{text}```")
+            except asyncio.TimeoutError:
+                await ctx.send(f"```Command timed out\n{text}```")
+            else:
+                if os.path.isfile(filename):
+                    try:
+                        await ctx.send(file=discord.File(filename))
+                    except discord.errors.HTTPException:
+                        await ctx.send(f"```Unable to send file over discord, image was too large\n{text}```")
+                    finally:
+                        os.remove(filename)
+                else:
+                    await ctx.send(f"```There was an error while rending the website\n{text}```")
+
+
+
 
 
 def setup(client):
