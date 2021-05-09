@@ -7,10 +7,10 @@ from discord.ext import commands
 from discord import Embed
 
 
-reddit = praw.Reddit(client_id="",
-                     client_secret="",
-                     username="",
-                     password="",
+reddit = praw.Reddit(client_id="mJfUbgRdBTcR6A",
+                     client_secret="78eg7HF1H9Ie1uD7NjGidsCgPNh2tg",
+                     username="C1nn4m0nGinger",
+                     password="T22N9mf6hXHYmhC",
                      user_agent="pythonbot")
 
 
@@ -18,6 +18,27 @@ reddit = praw.Reddit(client_id="",
 class reddit_commands(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+
+    @commands.command(name="minecraft", aliases=['mc'], description="Random post from the minecraft subreddit")
+    async def minecraft(self, ctx):
+        subreddit = reddit.subreddit("minecraft")
+        all_subs = []
+
+        top = subreddit.top(limit=50)
+
+        for submission in top:
+            all_subs.append(submission)
+
+        random_sub = random.choice(all_subs)
+
+        name = random_sub.title
+        url = random_sub.url
+
+        embed = discord.Embed(title=name, colour=discord.Colour.gold())
+        embed.set_image(url=url)
+        embed.set_footer(text=f"Asked by {ctx.author.name}")
+        await ctx.send(embed=embed)
 
     @commands.command(name="codingmemes", description="Random coding meme from the coding meme subreddit", aliases=["codememe"])
     async def codingmemes(self, ctx):
@@ -28,7 +49,7 @@ class reddit_commands(commands.Cog):
         for submission in top:
             all_subs.append(submission)
         random_sub = random.choice(all_subs)
-        embed = discord.Embed(title=submission.name, colour=discord.Colour.random())
+        embed = discord.Embed(title=submission.name, colour=discord.Colour.red())
         embed.set_image(submission.url)
         embed.set_footer(text=f"Asked by {ctx.author.name}")
         await ctx.send(embed=embed)
@@ -37,7 +58,7 @@ class reddit_commands(commands.Cog):
         try:
             subreddit = reddit.subreddit(usergivensub)
             sub_exists = True
-        except NotFound:
+        except:
             await ctx.send(f"Unable to find {subreddit}")
         if sub_exists == True:
             all_subs = []
