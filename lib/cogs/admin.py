@@ -188,7 +188,7 @@ if the command is not in the channel, please specify the channel"""
             embed.set_author(name=f"User info for {member}")
             embed.set_thumbnail(url=member.avatar_url)
             time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"), inline=False)
+            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
             embed.add_field(name="ID:", value=member.id, inline=False)
             embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
             embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
