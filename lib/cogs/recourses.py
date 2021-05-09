@@ -11,7 +11,7 @@ class recourses(commands.Cog):
     @commands.command(name="OSRecourses", description="OS support and recommendations", aliases=["OS"])
     async def OS(self, ctx):
         pages = []
-        main = Embed(title="OS Suggestions and recourses", colour=discord.Colour.random())
+        main = Embed(title="OS Suggestions and recourses", colour=discord.Colour.red())
         main.set_thumbnail(url="https://www.howtogeek.com/wp-content/uploads/2018/08/img_5b68e80f77e33.png")
         main.add_field(name="```(1) Main page```", value="⠀", inline=False)
         main.add_field(name="```(2) OS Suggestions```", value="⠀", inline=False)
@@ -23,7 +23,7 @@ class recourses(commands.Cog):
         main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 7)")
         pages.append(main)
 
-        ossuggest = Embed(title="Suggested operating systems", colour=discord.Colour.random())
+        ossuggest = Embed(title="Suggested operating systems", colour=discord.Colour.red())
         ossuggest.add_field(name="[Parrot OS](https://parrotsec.org/)", value="Parrot OS is an incredible OS designed for cyber security and forensics, featuring a huge array of preinstalled tools.", inline=False)
         ossuggest.add_field(name="[Ubuntu](https://ubuntu.com/)", value="Ubuntu is a commonly used day to day Linux distro, knowns for it's elegant design and constant support.", inline=False)
         ossuggest.add_field(name="[Arch Linux](https://archlinux.org/)", value="Arch is a lightweight and flexible Linux distro. Arch prides itself on being as simplistic as possible, allowing the user to build the OS to their liking", inline=False)
@@ -34,7 +34,7 @@ class recourses(commands.Cog):
         ossuggest.set_footer(text=f"Please use the 🔢 button to jump to a page (page 2 out of 7)")
         pages.append(ossuggest)
 
-        linux = Embed(title="Linux support", colour=discord.Colour.random())
+        linux = Embed(title="Linux support", colour=discord.Colour.red())
         linux.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/150px-Tux.svg.png")
         linux.add_field(name="Stackoverflow Linux", value="https://stackoverflow.com/questions/tagged/linux", inline=False)
         linux.add_field(name="Ask ubuntu", value="https://askubuntu.com/", inline=False)
@@ -45,7 +45,7 @@ class recourses(commands.Cog):
         linux.set_footer(text=f"Please use the 🔢 button to jump to a page (page 3 out of 7)")
         pages.append(linux)
 
-        windows = Embed(title="Windows support", colour=discord.Colour.random())
+        windows = Embed(title="Windows support", colour=discord.Colour.red())
         windows.set_thumbnail(url="http://pngimg.com/uploads/windows_logos/windows_logos_PNG28.png")
         windows.add_field(name="Microsoft answers", value="https://answers.microsoft.com/en-us", inline=False)
         windows.add_field(name="Windows 10 forums", value="https://www.tenforums.com/", inline=False)
@@ -54,7 +54,7 @@ class recourses(commands.Cog):
         windows.set_footer(text=f"Please use the 🔢 button to jump to a page (page 4 out of 7)")
         pages.append(windows)
 
-        macos = Embed(title="Mac OS support", colour=discord.Colour.random())
+        macos = Embed(title="Mac OS support", colour=discord.Colour.red())
         macos.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/MacOS_original_logo.svg/1024px-MacOS_original_logo.svg.png")
         macos.add_field(name="Apple Support", value="https://support.apple.com/en-gb/macos", inline=False)
         macos.add_field(name="Mac OS support community", value="https://discussions.apple.com/community/mac_os", inline=False)
@@ -65,7 +65,7 @@ class recourses(commands.Cog):
         macos.set_footer(text=f"Please use the 🔢 button to jump to a page (page 5 out of 7)")
         pages.append(macos)
 
-        mobile = Embed(title="Mobile OS support", colour=discord.Colour.random())
+        mobile = Embed(title="Mobile OS support", colour=discord.Colour.red())
         mobile.set_thumbnail(url="https://appsamurai.com/wp-content/uploads/2017/07/android-and-ios-development.jpg")
         mobile.add_field(name="Android help", value="https://support.google.com/android/?hl=en-GB#topic=7313011", inline=False)
         mobile.add_field(name="Android docs", value="https://developer.android.com/docs", inline=False)
@@ -77,7 +77,7 @@ class recourses(commands.Cog):
         mobile.set_footer(text=f"Please use the 🔢 button to jump to a page (page 6 out of 7)")
         pages.append(mobile)
 
-        funos = Embed(title="Fun operating systems", colour=discord.Colour.random())
+        funos = Embed(title="Fun operating systems", colour=discord.Colour.red())
         funos.add_field(name="[Temple OS](https://templeos.org/)",
                         value="Temple OS is a well known OS made by Terry A. Davis, a developer who unfortunately died in 2018. The OS is written in `HolyC` and features an 8-bit ASCII display.", inline=False)
         funos.add_field(name="[Windows ME](https://winworldpc.com/product/windows-me/final)",
@@ -95,7 +95,7 @@ class recourses(commands.Cog):
     async def ProgRecourses(self, ctx):
         pages = []
 
-        main = Embed(title="Programming Recourses", colour=discord.Colour.random())
+        main = Embed(title="Programming Recourses", colour=discord.Colour.red())
         main.add_field(name="```(1) Main```", value="⠀", inline=False)
         main.add_field(name="```(2) Python```", value="⠀", inline=False)
         main.add_field(name="```(3) C Family```", value="⠀", inline=False)
@@ -106,7 +106,7 @@ class recourses(commands.Cog):
         main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 6)")
         pages.append(main)
 
-        python = Embed(title="Python Recourses", colour=discord.Colour.random())
+        python = Embed(title="Python Recourses", colour=discord.Colour.red())
         python.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/768px-Python-logo-notext.svg.png")
         python.add_field(name="Python website", value="https://www.python.org/", inline=False)
         python.add_field(name="Learn python", value="https://www.learnpython.org/", inline=False)
@@ -118,7 +118,7 @@ class recourses(commands.Cog):
         python.set_footer(text=f"Please use the 🔢 button to jump to a page (page 2 out of 6)")
         pages.append(python)
 
-        cfamily = Embed(title="C family recourses", colour=discord.Colour.random())
+        cfamily = Embed(title="C family recourses", colour=discord.Colour.red())
         cfamily.set_thumbnail(url="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/106186202/original/838192fff0216caf59ce6571211694c39ed7e328/do-programming-work-of-c-family-language-accurately.jpg")
         cfamily.add_field(name="C family list", value="https://en.wikipedia.org/wiki/List_of_C-family_programming_languages", inline=False)
         cfamily.add_field(name="Learn C", value="https://www.learn-c.org/", inline=False)
@@ -128,7 +128,7 @@ class recourses(commands.Cog):
         cfamily.set_footer(text=f"Please use the 🔢 button to jump to a page (page 3 out of 6)")
         pages.append(cfamily)
 
-        java = Embed(title="Java recourses", colour=discord.Colour.random())
+        java = Embed(title="Java recourses", colour=discord.Colour.red())
         java.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/en/thumb/3/30/Java_programming_language_logo.svg/1200px-Java_programming_language_logo.svg.png")
         java.add_field(name="Java website", value="https://www.java.com/", inline=False)
         java.add_field(name="W3Schools java", value="https://www.w3schools.com/java/", inline=False)
@@ -137,7 +137,7 @@ class recourses(commands.Cog):
         java.set_footer(text=f"Please use the 🔢 button to jump to a page (page 4 out of 6)")
         pages.append(java)
 
-        go = Embed(title="Go recourses", colour=discord.Colour.random())
+        go = Embed(title="Go recourses", colour=discord.Colour.red())
         go.set_thumbnail(url="https://sdtimes.com/wp-content/uploads/2018/02/golang.sh_-490x490.png")
         go.add_field(name="Go lang wiki", value="https://golang.org/doc/articles/wiki/", inline=False)
         go.add_field(name="Go lang forums", value="https://forums.online-go.com/?utm_source=devglan", inline=False)
@@ -145,7 +145,7 @@ class recourses(commands.Cog):
         go.set_footer(text=f"Please use the 🔢 button to jump to a page (page 5 out of 6)")
         pages.append(go)
 
-        web = Embed(title="Web development and databases recourses", colour=discord.Colour.random())
+        web = Embed(title="Web development and databases recourses", colour=discord.Colour.red())
         web.set_thumbnail(url="https://www.pngfind.com/pngs/m/170-1706361_web-development-icon-web-development-logo-png-transparent.png")
         web.add_field(name="W3Schools", value="https://www.w3schools.com/", inline=False)
         web.add_field(name="Learn HTML and CSS", value="https://www.codecademy.com/catalog/language/html-css", inline=False)
@@ -164,7 +164,7 @@ class recourses(commands.Cog):
     async def hackingrecourses(self, ctx):
         pages = []
 
-        main = Embed(title="Hacking basics", colour=discord.Colour.random())
+        main = Embed(title="Hacking basics", colour=discord.Colour.red())
         main.add_field(name="```(1) Main```", value="⠀", inline=False)
         main.add_field(name="```(2) What is ethical hacking?```", value="⠀", inline=False)
         main.add_field(name="```(3) Stages of penetration testing```", value="⠀", inline=False)
@@ -174,7 +174,7 @@ class recourses(commands.Cog):
         main.set_footer(text=f"Please use the 🔢 button to jump to a page (page 1 out of 6)")
         pages.append(main)
 
-        ethicalhacking = Embed(title="What is ethical hacking?", colour=discord.Colour.random())
+        ethicalhacking = Embed(title="What is ethical hacking?", colour=discord.Colour.red())
         explanation = """
 Ethical hacking is when a security expert (often a penetration tester) attempts to gain access to an IT system of which they are permitted to test.
 This is done in order to expose potential vulnerabilities in the system so they may be patched before a black hat hacker exploits them.
@@ -213,7 +213,7 @@ IoT:
         ethicalhacking.set_footer(text=f"Please use the 🔢 button to jump to a page (page 2 out of 6)")
         pages.append(ethicalhacking)
 
-        stages = Embed(title="Stages of penetration testing", colour=discord.Colour.random())
+        stages = Embed(title="Stages of penetration testing", colour=discord.Colour.red())
         recon = """
 Reconnaissance is the first and most important stage of penetration testing. This can be split into two types:
 
@@ -268,7 +268,7 @@ Suggested fixes with links to patches or alternative software/hardware
         stages.set_footer(text=f"Please use the 🔢 button to jump to a page (page 3 out of 6)")
         pages.append(stages)
 
-        dosanddonts = Embed(title="Do's and don'ts of pentesting", colour=discord.Colour.random())
+        dosanddonts = Embed(title="Do's and don'ts of pentesting", colour=discord.Colour.red())
         do = """
 #1 Get express, preferably written, permission from a target before engaging in a pentest
 #2 Clarify and respect boundaries and stay within your given scope
@@ -290,7 +290,7 @@ Suggested fixes with links to patches or alternative software/hardware
         dosanddonts.set_footer(text=f"Please use the 🔢 button to jump to a page (page 4 out of 6)")
         pages.append(dosanddonts)
 
-        jobs = Embed(title="Jobs in cyber security", colour=discord.Colour.random())
+        jobs = Embed(title="Jobs in cyber security", colour=discord.Colour.red())
         CISO = """
 A CISO is typically a mid executive level position who oversees general operations regarding IT security.
 They are directly responsible for planning, co-ordinating and directing all IT system security implemntations
@@ -316,7 +316,7 @@ Average salary: £63,906 (11/04/2021)
         jobs.set_footer(text=f"Please use the 🔢 button to jump to a page (page 5 out of 6)")
         pages.append(jobs)
 
-        learn = Embed(title="Places you can learn", colour=discord.Colour.random())
+        learn = Embed(title="Places you can learn", colour=discord.Colour.red())
         learn.add_field(name="Cybrary", value="https://www.cybrary.it/", inline=False)
         learn.add_field(name="Udemy", value="https://www.udemy.com/topic/cyber-security/", inline=False)
         learn.add_field(name="Youtube", value="https://www.youtube.com/results?search_query=cyber+security", inline=False)
@@ -327,6 +327,7 @@ Average salary: £63,906 (11/04/2021)
 
         paginator = Paginator(pages=pages)
         await paginator.start(ctx)
+
 
 def setup(client):
     client.add_cog(recourses(client))
