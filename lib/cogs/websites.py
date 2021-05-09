@@ -1,12 +1,9 @@
 import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
-import async_imgkit.api as imgkit
 from async_timeout import timeout
 from faker.providers import bank, credit_card, phone_number
-from discord import Embed, colour
+from discord import Embed
 from discord.ext import commands
 from aiohttp import request
-from pyppeteer import launch
-from pyppeteer.errors import PageError
 
 with open('secrets.json', 'r') as secrets:
     data = secrets.read()
@@ -47,7 +44,7 @@ class websites(commands.Cog):
                 data = await response.json()
                 embed = Embed(title="Email check",
                               description=f"checking {email}",
-                              colour=discord.Colour.random())
+                              colour=discord.Colour.red())
                 embed.add_field(name="Status: ", value=data['data']['status'])
                 embed.add_field(name="Result: ", value=data['data']['result'])
                 embed.add_field(name="Score: ", value=data['data']['score'])
@@ -99,7 +96,7 @@ class websites(commands.Cog):
         fake = faker.Faker()
         embed = Embed(title="Here is your fake identity, enjoy!",
                       description=f"Full name: {fake.name()}",
-                      colour=discord.Colour.random())
+                      colour=discord.Colour.red())
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/160px-Anonymous_emblem.svg.png")
         embed.add_field(name="Email: ", value=fake.email(), inline=False)
         embed.add_field(name="URL: ", value=fake.url(), inline=False)
@@ -109,31 +106,6 @@ class websites(commands.Cog):
         embed.add_field(name="Hostname: ", value=fake.hostname(), inline=False)
         embed.add_field(name="IP Address: ", value=fake.ipv4_public(), inline=False)
         await ctx.send(embed=embed)
-
-    @commands.command(name="exiftool", description="File information", aliases=["filedata", "fileinfo"])
-    async def exiftool(self, ctx):
-        if not ctx.message.attachments:
-            await ctx.send("```Usage: ./exiftool // Attach a file to the message```")
-        else:
-            attachment_name = ctx.message.attachments[0].filename
-            attachment_url = ctx.message.attachments[0].url
-            r = requests.get(attachment_url)
-            with open(f"./exiftool/{ctx.author.id}_{attachment_name}", "wb") as f:
-                f.write(r.content)
-            f.close()
-            with exiftool.ExifTool() as et:
-                metadata = et.get_metadata(f"./exiftool/{ctx.author.id}_{attachment_name}")
-            metadata = json.dumps(metadata, indent=4, sort_keys=True)
-            if len(str(metadata)) < 2000:
-                await ctx.send(f"""```json
-    {metadata}```""")
-                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")
-            else:
-                async with aiofiles.open(f"./exiftool/{ctx.author.id}_{attachment_name}.txt", mode="x") as f:
-                    await f.write(metadata)
-                await ctx.send(file=discord.File(f"./exiftool/{ctx.author.id}_{attachment_name}.txt"))
-                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}")  # Removes provided file
-                os.remove(f"./exiftool/{ctx.author.id}_{attachment_name}.txt")
 
     @commands.command(name="RedirectChaser", description="Finds all redirects associated with a link", aliases=["Wheregoes", "RedirectChecker"])
     async def redirectchaser(self, ctx, url=None):
@@ -149,13 +121,12 @@ class websites(commands.Cog):
             for url_redirects in chase_redirects(url):
                 urls.append(url_redirects)
             embed = Embed(title=f"Redirects for {url}",
-                          colour=discord.Colour.random())
+                          colour=discord.Colour.red())
             num = 1
             for url in urls:
                 embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
                 num += 1
             await ctx.send(embed=embed)
-
 
     @commands.command(name="subdomain", description="Find subdomains", aliases=["sdomains"])
     async def findsubdomains(self, ctx, domain=None):
@@ -179,47 +150,6 @@ class websites(commands.Cog):
                         await ctx.send(f"```{subdomains}```")
                 else:
                     await ctx.send(f"```There was an issue with the API\n{text}```")
-
-    @commands.command(name="webss", description="Screenshot a website", aliases=["webscreenshot"])
-    async def webss(self, ctx, website=None):
-        text = """
-Usage: ./webss [website]
-
-Please pass the full URL, example: https://www.google.com/
-"""
-        regex = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
-        if website is None:
-            await ctx.send(f"```{text}```")
-        elif re.search(regex, website) is None:
-            await ctx.send(f"```Invalid URL\n{text}```")
-        else:
-            userAgent = "'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0'"
-            filename = f"./webpages/{ctx.author.id}.png"
-            options = {
-                "format": "png",
-                "custom-header": [
-                    ("User-Agent", userAgent)
-                ],
-                "quiet": ""
-            }
-            try:
-                async with timeout(3):
-                    await imgkit.from_url(website, filename, options=options)
-            except OSError:
-                await ctx.send(f"```Unable to connect to {website}\n{text}```")
-            except asyncio.TimeoutError:
-                await ctx.send(f"```Command timed out\n{text}```")
-            else:
-                if os.path.isfile(filename):
-                    try:
-                        await ctx.send(file=discord.File(filename))
-                    except discord.errors.HTTPException:
-                        await ctx.send(f"```Unable to send file over discord, image was too large\n{text}```")
-                    finally:
-                        os.remove(filename)
-                else:
-                    await ctx.send(f"```There was an error while rending the website\n{text}```")
-
 
 
 
