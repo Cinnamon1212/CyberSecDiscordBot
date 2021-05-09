@@ -1,4 +1,4 @@
-import discord, shodan, json, subprocess, string, socket
+import discord, shodan, json, socket
 from discord.ext import commands
 from discord import Embed, Colour
 
@@ -58,47 +58,15 @@ class shodan(commands.Cog):
 
     @shodanlookup.error
     async def shodanlookup_error(self, ctx, error):
+        text = "Usage: ./shodanlookup [IP]"
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please provide an IP")
+            await ctx.send(f"```Please provide an IP\n{text}```")
         elif isinstance(error, commands.BadArgument):
-            await ctx.send("Please ensure you provide an IP")
+            await ctx.send(f"```Please ensure you provide an IP\{text}```")
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("The API could not check that IP")
+            await ctx.send(f"```The API could not check that IP\n{text}```")
         else:
             raise
-
-    # Requires paid shodan
-    # @commands.command(name="shodansearch", description="Searches through shodan")
-    # async def shodansearch(self, ctx, *, query):
-    #    embed = Embed(name=f"Shodan search for {query}",
-    #                  description="showing the top results:")
-
-    #    for banner in api.search_cursor(f'http.title:"{query}"'):
-    #        resultnumber = 1
-    #        embed.add_field(name="Result:", value=banner)
-    #        resultnumber += 1
-    #    await ctx.send(embed=embed)
-
-    @commands.command(name="Honeypot", description="Checks if an IP is a honey pot or not")
-    async def honeypot(self, ctx, ip: str):
-        ip = socket.gethostbyname(ip)
-        if validate_ip(ip) is True:
-            output = subprocess.getoutput(f"shodan honeyscore {ip} #")
-            if ("Usage: shodan") in output:
-                await ctx.send("Please ensure you pass the IP")
-            elif("Unable to calculate honeyscore") in output:
-                await ctx.send("Unable to calculate honeyscore")
-            else:
-                embed = Embed(title="Shodan Honeypot check",
-                              colour=discord.Colour.random(),
-                              description=output)
-                embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Runny_hunny.jpg/800px-Runny_hunny.jpg")
-                time = ctx.message.created_at
-                embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-                await ctx.send(embed=embed)
-        else:
-            await ctx.send("Please enter a valid IP!")
-
 
 def setup(client):
     client.add_cog(shodan(client))
