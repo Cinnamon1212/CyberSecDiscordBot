@@ -1,11 +1,7 @@
 import discord, math, re, cmath, aiofiles, os
 from enum import Enum
 from dataclasses import dataclass
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from pylatexenc.latex2text import LatexNodes2Text
-from pylatexenc.latexwalker import LatexWalkerError
 from discord.ext import commands
 from discord import Embed
 WHITESPACE = [' ', '\n' '\t']
@@ -29,11 +25,6 @@ def findnumbers(numbers):
             except ValueError:
                 pass
     return numbers
-
-def getSize(txt, font):
-    Img = Image.new('RGB', (1, 1))
-    drawn = ImageDraw.Draw(Img)
-    return drawn.textsize(txt, font)
 
 class TokenType(Enum):
     NUMBER = 0
@@ -99,7 +90,7 @@ class Lexer:
         decimal_count = 0
         number_str = self.current_char
         self.advance()
-        while self.current_char != None and self.current_char =='.' or self.current_char in DIGITS:
+        while self.current_char is not None and self.current_char == '.' or self.current_char in DIGITS:
             if self.current_char == '.':
                 decimal_count += 1
                 if decimal_count > 1:
@@ -293,10 +284,13 @@ Supported operations:
 
     @commands.command(name="StandardDeviation", description="Standard deviation of values", aliases=["std"])
     async def std(self, ctx, *, numbers):
-        numbers = re.findall('[0-9]+', numbers)
-        for i in range(0, len(numbers)):
-            numbers[i] = int(numbers[i])
-        std = np.std(numbers)
+        numbers = findnumbers(numbers)
+        floats = []
+        for number in numbers:
+            floats.append(float(number))
+        mean = sum(floats) / len(floats)
+        variance = sum(pow(x-mean,2) for x in floats) / len(floats)
+        std = math.sqrt(variance)
         await ctx.send(f"The standard deviation is: {round(std, 3)}")
 
     @std.error
@@ -304,6 +298,7 @@ Supported operations:
         if isinstance(error, commands.MissingRequiredArgument):
             text = """
 Usage: ./std [List of numbers]
+Please split numbers with ','
             """
             await ctx.send(f"```{text}```")
 
@@ -387,9 +382,7 @@ Usage: ./ceil [list of values]
 
     @commands.command(name="greatestcommondivisor", description="Finds the greatest common divisor of a set of values", aliases=["gcd"])
     async def gcd_(self, ctx, *, numbers=None):
-        text = """
-        Usage: ./gcd [num1] [num2]
-                    """
+        text = "Usage: ./gcd [num1] [num2]"
         if numbers is None:
             await ctx.send(f"```{text}```")
         else:
