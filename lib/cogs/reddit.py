@@ -7,10 +7,10 @@ from discord.ext import commands
 from discord import Embed
 
 
-reddit = praw.Reddit(client_id="mJfUbgRdBTcR6A",
-                     client_secret="78eg7HF1H9Ie1uD7NjGidsCgPNh2tg",
-                     username="C1nn4m0nGinger",
-                     password="T22N9mf6hXHYmhC",
+reddit = praw.Reddit(client_id="",
+                     client_secret="",
+                     username="",
+                     password="",
                      user_agent="pythonbot")
 
 
