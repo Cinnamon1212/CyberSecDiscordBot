@@ -1,158 +1,246 @@
-import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
-from async_timeout import timeout
-from faker.providers import bank, credit_card, phone_number
+import discord, json, magic, os, aiofiles, re, imageio
+from bs4 import BeautifulSoup
+from PIL import Image, ExifTags
 from discord import Embed
 from discord.ext import commands
 from aiohttp import request
+from pygicord import Paginator
+from datetime import datetime
 
 with open('secrets.json', 'r') as secrets:
     data = secrets.read()
 keys = json.loads(data)
-securitytrailskey = keys['securitytrails']
-
-def chase_redirects(url):
-    while True:
-        yield url
-        r = requests.head(url)
-        if 300 < r.status_code < 400:
-            url = r.headers['location']
-        else:
-            break
+apikey = keys['googleapi']
+builtwithkey = keys['builtwith']
 
 
-class websites(commands.Cog):
+async def get_imagemeta(file):
+    pic = imageio.imread(file)
+    type = Image.open(file)
+    megapixels = (type.size[0]*type.size[1]/1000000)
+    d = re.sub(r'[a-z]', '', str(pic.dtype))
+    t = len(Image.Image.getbands(type))
+
+    results = f"""
+
+Format: {type.format}
+Data type: {pic.dtype}
+Bit depth (per channel): {d}
+Bit depth (per pixel): {int(d)*int(t)}
+Mode: {type.mode}
+Palette: {type.palette}
+Width: {type.size[0]}
+Height: {type.size[1]}
+Megapixels: {megapixels}
+
+"""
+    return results
+
+class osint(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.url_regex = re.compile(
+                r'^(?:http|ftp)s?://'
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
+                r'localhost|'
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+                r'(?::\d+)?'
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-    @commands.command(name="StatusCheck", aliases=["Websitestatus", "webstatus", "httpstatus"], description="Used for getting http response code of a web page")
-    async def website(self, ctx, url=""):
-        if url == "":
-            await ctx.send("Usage: ./webstatus (url)")
-        else:
-            async with request("GET", url) as resp:
-                await ctx.send(f"website returned: {resp.status}")
-
-    @commands.command(name="emailchecker", description="Verifies if an email is real or not", aliases=["emailverify", "emailinfo"])
-    async def emailchecker(self, ctx, email: str):
-        with open('secrets.json', 'r') as secrets:
-            data1 = secrets.read()
-        hunterapikey = json.loads(data1)
-        apikey = hunterapikey['hunteriokey']
-        url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={apikey}"
-        async with request("GET", url, headers={}) as response:
-            if response.status == 200:
-                data = await response.json()
-                embed = Embed(title="Email check",
-                              description=f"checking {email}",
-                              colour=discord.Colour.red())
-                embed.add_field(name="Status: ", value=data['data']['status'])
-                embed.add_field(name="Result: ", value=data['data']['result'])
-                embed.add_field(name="Score: ", value=data['data']['score'])
-                if data['data']['regexp'] is False:
-                    embed.add_field(name="Valid format?", value="Invalid email format")
-                elif data['data']['regexp'] is True:
-                    embed.add_field(name="Valid format?", value="Valid email format")
-                else:
-                    embed.add_field(name="Valid format?", value="Unable to check!")
-
-                if data['data']['smtp_server'] is False:
-                    embed.add_field(name="SMTP check: ", value="Invalid SMTP server")
-                elif data['data']['smtp_server'] is True:
-                    embed.add_field(name="SMTP check: ", value="Valid SMTP server")
-                else:
-                    embed.add_field(name="SMTP check: ", value="Unable to validate!")
-
-                if data['data']['mx_records'] is False:
-                    embed.add_field(name="MX Records?", value="No available records")
-                elif data['data']['mx_records'] is True:
-                    embed.add_field(name="MX Records?", value="Existing records")
-                else:
-                    embed.add_field(name="MX Records?", value="Unable to check!")
-
-                if data['data']['gibberish'] is False:
-                    embed.add_field(name="Gibberish email?", value="Looks like it makes sense")
-                elif data['data']['gibberish'] is True:
-                    embed.add_field(name="Gibberish email?", value="Complete nonsense m8")
-                else:
-                    embed.add_field(name="Gibberish email?", value="Unable to check!")
-
-                time = ctx.message.created_at
-                embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-                await ctx.send(embed=embed)
-            elif response.status == 400:
-                await ctx.send("```That's not an email!\nUsage: ./emailchecker [email]```")
-            else:
-                await ctx.send("There was an issue with the API!")
-
-    @emailchecker.error
-    async def emailchecker_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("```Usage: ./emailchecker [email]```")
-        else:
-            raise
-
-    @commands.command(name="IdentityGenerator", description="Generates fake personal information", aliases=["Faker", "FakeID"])
-    async def IdentityGenerator(self, ctx):
-        fake = faker.Faker()
-        embed = Embed(title="Here is your fake identity, enjoy!",
-                      description=f"Full name: {fake.name()}",
-                      colour=discord.Colour.red())
-        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/160px-Anonymous_emblem.svg.png")
-        embed.add_field(name="Email: ", value=fake.email(), inline=False)
-        embed.add_field(name="URL: ", value=fake.url(), inline=False)
-        embed.add_field(name="Address: ", value=fake.address(), inline=False)
-        embed.add_field(name="Credit card: ", value=fake.credit_card_full(), inline=False)
-        embed.add_field(name="SSN: ", value=fake.ssn(), inline=False)
-        embed.add_field(name="Hostname: ", value=fake.hostname(), inline=False)
-        embed.add_field(name="IP Address: ", value=fake.ipv4_public(), inline=False)
-        await ctx.send(embed=embed)
-
-    @commands.command(name="RedirectChaser", description="Finds all redirects associated with a link", aliases=["Wheregoes", "RedirectChecker"])
-    async def redirectchaser(self, ctx, url=None):
-        text = "Usage: ./wheregoes [URL]"
-        if url is None:
+    @commands.command(name="instagramlookup", description="Search for Instagram users", aliases=["instausers"])
+    async def instagramlookup(self, ctx, *, username=None):
+        text = "./instagramlookup [username]"
+        if username is None:
             await ctx.send(f"```{text}```")
         else:
-            try:
-                requests.get(url)
-            except requests.ConnectionError:
-                await ctx.send(f"Unable to connect to {url}\n{text}")
-            urls = []
-            for url_redirects in chase_redirects(url):
-                urls.append(url_redirects)
-            embed = Embed(title=f"Redirects for {url}",
-                          colour=discord.Colour.red())
-            num = 1
-            for url in urls:
-                embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
-                num += 1
-            await ctx.send(embed=embed)
+            if username[0] == "@":
+                username = username[1:]
+            async with request("GET", f"https://www.instagram.com/{username}/") as resp:
+                if resp.status == 404:
+                    first = None
+                else:
+                    first = username
+            url = f"https://searchusers.com/search/{username}"
+            async with request("GET", url) as response:
+                if response.status == 200:
+                    html = await response.text()
+                else:
+                    await ctx.send(f"```Website returned code: {response.status}, please try again later\n{text}```")
+                    html = None
 
-    @commands.command(name="subdomain", description="Find subdomains", aliases=["sdomains"])
-    async def findsubdomains(self, ctx, domain=None):
-        text = "Usage: ./subdomain [domain]"
+            if html is not None:
+                soup = BeautifulSoup(html, 'html.parser')
+                accounts = soup.find_all(class_="timg")
+                account_links = ""
+                if first is not None:
+                    account_links += f"\n+ {first}"
+
+                for account in accounts:
+                    x = account.get("href")
+                    if x is not None:
+                        account_links += f"\n+ {x[29:]}"
+                await ctx.send(f"""
+```diff
+{account_links}```""")
+
+    @commands.command(name="facebooklookup", description="Search for Facebook users", aliases=["fbusers"])
+    async def facebooklookup(self, ctx, *, username=None):
+        text = "Usage: ./facebooklookup [username]"
+        if username is None:
+            await ctx.send(f"```{text}```")
+        else:
+            q = username
+            cx = "09982abed469e58ff"
+            url = f"https://www.googleapis.com/customsearch/v1?key={apikey}&cx={cx}&q={q}&start=1"
+            async with request("GET", url) as response:
+                search_response = await response.json()
+            try:
+                account_links = ""
+                x = 1
+                for item in search_response['items']:
+                    if item['formattedUrl'] not in account_links:
+                        account_links += f"\n+ {item['formattedUrl']}"
+                    if x == 30:
+                        break
+                    x += 1
+
+                await ctx.send(f"""
+```diff
+{account_links}```""")
+            except KeyError:
+                await ctx.send(f"```No search results found for {username}\n{text}```")
+
+    @commands.command(name="twitterlookup", description="Search for Twitter users", aliases=["twitterusers"])
+    async def twitterlookup(self, ctx, *, username=None):
+        text = "Usage: ./twitterlookup [username]"
+        if username is None:
+            await ctx.send(f"```{text}```")
+        else:
+            q = username
+            cx = "fd1dde45779087b24"
+            url = f"https://www.googleapis.com/customsearch/v1?key={apikey}&cx={cx}&q={q}&start=1"
+            async with request("GET", url) as response:
+                search_response = await response.json()
+            try:
+                account_links = ""
+                x = 1
+                for item in search_response['items']:
+                    if item['formattedUrl'] not in account_links:
+                        account_links += f"\n+ {item['formattedUrl']}"
+                    if x == 30:
+                        break
+                    x += 1
+
+                await ctx.send(f"""
+```diff
+{account_links}```""")
+            except KeyError:
+                await ctx.send(f"```No search results found for {username}\n{text}```")
+
+
+    @commands.command(name="getdomain", description="Find detailed information for a domain", aliases=["domaininfo"])
+    async def getdomain(self, ctx, domain=None):
+        text = "Usage: ./getdomain [domain]\n\nNote that only the root domain will be checked."
         if domain is None:
             await ctx.send(f"```{text}```")
         else:
-            url = f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
-            querystring = {"children_only": "false", "include_inactive": "true"}
-            headers = {"Accept": "application/json", "apikey": securitytrailskey}
-            async with request("GET", url, headers=headers, params=querystring) as response:
+            url = f"https://api.builtwith.com/free1/api.json?KEY={builtwithkey}&LOOKUP={domain}"
+            async with request("GET", url) as response:
                 if response.status == 200:
                     data = await response.json()
-                    Found_Subdomains = data['subdomains']
-                    if len(Found_Subdomains) == 0:
-                        await ctx.send(f"```No subdomain records found!\n{text}```")
-                    else:
-                        subdomains = "First 10 subdomains:"
-                        for sub in Found_Subdomains[:20]:
-                            subdomains += f"\n{sub}.{domain}"
-                        await ctx.send(f"```{subdomains}```")
                 else:
-                    await ctx.send(f"```There was an issue with the API\n{text}```")
+                    await ctx.send(f"```Website returned code: {response.status}, please try again later\n{text}```")
+                    data = None
+            if data is not None:
+                embeds = []
+                embed = Embed(title=data['domain'], colour=discord.Colour.red())
+                embed.add_field(name="First time domain was indexed: ", value=datetime.fromtimestamp(data['first']), inline=False)
+                embed.add_field(name="Last time domain was indexed: ", value=datetime.fromtimestamp(data['last']), inline=False)
+                embed.add_field(name="Number of groups: ", value=len(data['groups']), inline=False)
+                embeds.append(embed)
+                x = 1
+                for group in data['groups']:
+                    embed = Embed(title=f"Group #{x}: {group['name']}", colour=discord.Colour.red())
+                    embed.add_field(name="Group name", value=group['name'], inline=False)
+                    if len(group['categories']) >= 22:
+                        categories = group['categories'][22:]
+                    else:
+                        categories = group['categories']
+                    y = 1
+                    for category in categories:
+                        embed.add_field(name=f"Category #{y}: ", value=category['name'], inline=False)
+                        embed.add_field(name="Live technologies: ", value=category['live'], inline=False)
+                        embed.add_field(name="Dead technologies: ", value=category['dead'], inline=False)
+                        y += 1
+                    embeds.append(embed)
+                    x += 1
+                paginator = Paginator(pages=embeds)
+                await paginator.start(ctx)
 
+    @commands.command(name="imagedata", description="Retrieve image data", aliases=["imagemeta"])
+    async def imagedata(self, ctx, url=None):
+        text = """
+Usage: ./imagedata [url/attach file to message]
+If you pass a URL, ensure the URL links directly to the image"""
+        images_extensions = ['.jpg', '.jpeg', '.jpe', '.jif', ' .jfif',
+                             '.jfi', '.png', '.gif', '.webp', '.tiff', '.tif'
+                             '.psd', '.raw', '.arw', '.cr2', '.nrw', '.k25',
+                             '.bmp', '.dib', '.heif', '.heic', '.ind', '.indd',
+                             '.indt', '.jp2', '.j2k', '.jpf', '.jpx', '.jpm',
+                             '.mj2', '.svg', '.svgz']
+        if ctx.message.attachments:
+            attachment_name = ctx.message.attachments[0].filename
+            extension = f".{attachment_name.split('.')[-1]}"
+            if '/' in attachment_name:
+                await ctx.send(f"```File names may not contain /\'s\n{text}```")
+            elif extension not in images_extensions:
+                await ctx.send(f"```Unaccepted file extension\n{text}```")
+            else:
+                attachment_url = ctx.message.attachments[0].url
+                async with request("GET", attachment_url) as r:
+                    file_content = await r.read()
+                file_path = f"./exiftool/{ctx.author.id}_{attachment_name}"
+                async with aiofiles.open(file_path, 'ab') as f:
+                    await f.write(file_content)
+                if "image/" in magic.from_file(file_path, mime=True).lower():
+                    check = True
+                else:
+                    await ctx.send(f"```Unsupported mime type\n{text}```")
+                    os.remove(file_path)
+                    check = False
+        else:
+            if url is not None:
+                if re.match(self.url_regex, url) is not None:
+                    extension = f".{url.split('.')[-1]}"
+                    if extension not in images_extensions:
+                        await ctx.send(f"```Unaccepted file extension\n{text}```")
+                    else:
+                        async with request("GET", url) as resp:
+                            if resp.status == 200:
+                                if "image/" not in resp.content_type.lower():
+                                    await ctx.send(f"```URL is not an image file\n{text}```")
+                                    file_content = None
+                                else:
+                                    try:
+                                        if int(resp.headers['Content-Length']) < 8000000:
+                                            file_content = await resp.read()
+                                    except KeyError:
+                                        file_content = None
+                                        await ctx.send(f"```Unable to verify file size\n{text}```")
+                            else:
+                                await ctx.send(f"```URL returned {resp.status}\n{text}```")
+                                file_content = None
+                        if file_content is not None:
+                            file_path = f"./exiftool/{ctx.author.id}.{resp.content_type.lower().split('/')[1]}"
+                            async with aiofiles.open(file_path, 'ab') as f:
+                                await f.write(file_content)
+            else:
+                file_path = None
+                await ctx.send(f"```{text}```")
 
-
+        if file_path is not None:
+            metadata = await get_imagemeta(file_path)
+            await ctx.send(f"```{metadata}```")
 
 def setup(client):
-    client.add_cog(websites(client))
+    client.add_cog(osint(client))
