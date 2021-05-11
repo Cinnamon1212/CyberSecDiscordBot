@@ -1,38 +1,14 @@
 import discord, shodan, json, socket
 from discord.ext import commands
 from discord import Embed, Colour
+from pygicord import Paginator
+from aiohttp import request
 
 with open('secrets.json', 'r') as secrets:
     data = secrets.read()
 shodanapikey = json.loads(data)
 apikey = shodanapikey['shodankey']
 api = shodan.Shodan(apikey)
-
-
-def validate_ip(s):
-    if s is not None:
-        restricted = ["192.16", "173.16", "172.31", "127.0."]
-        a = s.split('.')
-        if len(a) != 4:
-            return False
-        for x in a:
-            if not x.isdigit():
-                return False
-            i = int(x)
-            if i < 0 or i > 255:
-                return False
-        firstsix = s[0:6]
-        print(firstsix)
-        check = any(r in firstsix for r in restricted)
-        print(check)
-        if check is True:
-            return False
-        else:
-            if s[2] == "10":
-                return False
-            else:
-                return True
-
 
 class shodan(commands.Cog):
     def __init__(self, client):
@@ -67,6 +43,105 @@ class shodan(commands.Cog):
             await ctx.send(f"```The API could not check that IP\n{text}```")
         else:
             raise
+
+    @commands.command(name="searchshodan", description="Search shodan's API for a query", aliases=["shodansearch"])
+    async def searchshodan(self, ctx, *, query=None):
+        text = "Usage: ./searchshodan [query]"
+        if query is None:
+            await ctx.send(f"```{text}```")
+        else:
+            async with request("GET", f"https://api.shodan.io/shodan/host/search?key={apikey}&query={query}&pages=1&minify=True") as r:
+                data = await r.json()
+            pages = []
+            if len(data['matches']) > 5:
+                matches = data['matches'][0:5]
+            else:
+                matches = data['matches']
+            embed = Embed(title=f"Search results for {query}", colour=discord.Colour.red(), inline=False)
+            embed.add_field(name="Number of results: ", value=data['total'], inline=False)
+            try:
+                embed.add_field(name="Scroll ID: ", value=data['_scroll_id'], inline=False)
+            except KeyError:
+                pass
+            pages.append(embed)
+            x = 1
+            for match in matches:
+                embed = Embed(title=f"Result #{x}", colour=discord.Colour.red())
+                try:
+                    ip_addr = match['host']
+                except KeyError:
+                    try:
+                        ip_addr = match['ip_str']
+                    except KeyError:
+                        ip_addr = None
+
+                if ip_addr is not None:
+                    embed.add_field(name="IP Address: ", value=ip_addr, inline=False)
+
+                if match['os'] is not None:
+                    embed.add_field(name="OS: ", value=match['os'], inline=False)
+                try:
+                    embed.add_field(name="Port: ", value=match['port'], inline=False)
+                except KeyError:
+                    pass
+
+                try:
+                    embed.add_field(name="Transport: ", value=match['transport'])
+                except KeyError:
+                    pass
+
+                try:
+                    embed.add_field(name="Organization: ", value=match['org'], inline=False)
+                except KeyError:
+                    pass
+                location = ""
+                try:
+                    location += f"{match['location']['country_name']}\n"
+                except KeyError:
+                    pass
+
+                try:
+                    location += f"{match['location']['longitude']}, {match['location']['latitude']}\n"
+                except KeyError:
+                    location = None
+
+                if location is not None:
+                    embed.add_field(name="Location: ", value=location, inline=False)
+                try:
+                    embed.add_field(name="ISP: ", value=match['isp'], inline=False)
+                except KeyError:
+                    pass
+
+                try:
+                    domain_names = ""
+                    for domain in match['domains']:
+                        domain_names += f"{domain}\n"
+                    embed.add_field(name="Domains: ", value=domain_names, inline=False)
+                except KeyError:
+                    pass
+                try:
+                    cves = match['vulns'].keys()
+                    cve_str = ""
+                    for cve in cves:
+                        cve_str += f"{cve}\n"
+                except KeyError:
+                    pass
+
+                try:
+                    embed.add_field(name="ASN: ", value=match['asn'], inline=False)
+                except KeyError:
+                    pass
+
+                x += 1
+                pages.append(embed)
+            paginator = Paginator(pages=pages)
+            await paginator.start(ctx)
+
+
+
+
+
+
 
 def setup(client):
     client.add_cog(shodan(client))
