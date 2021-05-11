@@ -11,11 +11,16 @@ To Do list:
 * Tidy code/Remove clutter
 
 Recent changes:
-* Added LICENSE.txt
-* Added ./vote command
-* Fixed ./cvesearch latest
-* Added owner commands ([bot.py](https://github.com/Cinnamon1212/CyberSecDiscordBot/blob/main/lib/bot.py))
-* Added ./donate
+* Removed nmap
+* Removed msfvenom
+* Removed exiftool
+* Removed AI cog
+* Removed WebSS
+* Added ImageMeta
+* Added subdomain info
+* Added OSINT cog (instagramlookup, twitterlookup, facebooklookup, getdomain)
+* Added search shodan
+* Added DNS Query
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
