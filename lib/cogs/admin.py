@@ -88,9 +88,9 @@ class admin(commands.Cog):
 
     @unban.error
     async def unban_error(self, ctx, error):
-        text = "Usage: ./ban [member] (reason)"
+        text = "Usage: ./uban [member/ID]"
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send(f"You do not have sufficient permissiosn to use this command\n```{text}```")
+            await ctx.send(f"```You do not have sufficient permissiosn to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.send("An error has occured, likely the bot is missing permissions")
         else:
@@ -170,7 +170,7 @@ if the command is not in the channel, please specify the channel"""
         text = """Usage: ./clear [Amount/ID] (channel)
 if the command is not in the channel, please specify the channel"""
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send(f"You do not have sufficient permissions\n```{text}```")
+            await ctx.send(f"```You do not have sufficient permissions\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.send("An error has occured, likely the bot is missing permissions")
         else:
@@ -199,7 +199,7 @@ if the command is not in the channel, please specify the channel"""
             await ctx.send(embed=embed)
 
     async def userinfo_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
+        if isinstance(error, commands.MemberNotFound):
             await ctx.send("```User not found\nUsage: ./userinfo [member]```")
 
 
@@ -222,6 +222,43 @@ if the command is not in the channel, please specify the channel"""
         time = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
+
+
+    @commands.command(name="rolemod", description="Add/Remove a role to a user", aliases=["giverole", "addrole", "remrole"])
+    @commands.has_permissions(manage_roles=True)
+    async def rolemod(self, ctx, method, member: discord.Member, role: discord.Role):
+        text = "Usage: ./rolemod [add/remove] [member] [role]"
+        if method.lower() == "add":
+            if role in member.roles:
+                await ctx.send(f"```The user already has this role\n{text}```")
+            else:
+                await member.add_roles(role)
+
+        elif method.lower() in ["rem", "remove", "del"]:
+            if role not in member.roles:
+                await ctx.send(f"```The user doesn't have {role.name}\n{text}```")
+            else:
+                bot_ = ctx.guild.get_member(self.client.user.id)
+                if bot_.top_role < member.top_role:
+                    await ctx.send(f"```This user has higher permissions than I do\n{text}```")
+                elif ctx.author.top_role < member.top_role:
+                    await ctx.send(f"```This user has higher permissions than you do\n{text}```")
+                else:
+                    await member.remove_roles(role)
+
+    @rolemod.error
+    async def rolemod_error(self, ctx, error):
+        text = "Usage: ./rolemod [member] [role]"
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"```You do not have permissions to run this command\n{text}```")
+        elif isinstance(error, commands.MemberNotFound):
+            await ctx.send(f"```Member not found\n{text}```")
+        elif isinstance(error, commands.RoleNotFound):
+            await ctx.send(f"```Role not found\n{text}```")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```{text}```")
+        else:
+            raise
 
 
 
