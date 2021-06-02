@@ -254,19 +254,19 @@ class maths(commands.Cog):
 
     @commands.command(name="calculator", description="A simple python calculator", aliases=["calc", "calculate"])
     async def calculator(self, ctx, *, query=None):
-        if query is None:
-            text = """
+        text = """
 Usage: ./calc [calculation]
 
 Supported operations:
-    [+] Addition
-    [-] Subtraction
-    [/] Division
-    [*] Multiplication
-    [()] Parenthasis
-    [-(int)] Negative numbers
-    [+(int)] Positive numbers
-            """
+[+] Addition
+[-] Subtraction
+[/] Division
+[*] Multiplication
+[()] Parenthasis
+[-(int)] Negative numbers
+[+(int)] Positive numbers
+        """
+        if query is None:
             await ctx.send(f"```{text}```")
         else:
             try:
@@ -276,10 +276,8 @@ Supported operations:
                 tree = parser.parse()
                 interpreter = Interpreter()
                 value = interpreter.visit(tree)
-                print(value)
                 await ctx.send(f"```{value}```")
             except Exception as e:
-                print(e)
                 await ctx.send(f"```There was an error while performing your calculation: {e}\n{text}```")
 
     @commands.command(name="StandardDeviation", description="Standard deviation of values", aliases=["std"])
