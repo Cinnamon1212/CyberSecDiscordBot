@@ -8,14 +8,12 @@ To Do list:
 * Tidy code/Remove clutter
 
 Recent changes:
-* Replaced nmap with ./portscan (self made)
-* Added ./googledork
 * Added ./imagedata (replaces exiftool)
 * Added ./intagramlookup, ./facebooklookup and ./twitterlookup
 * Added ./getdomain
 * Added ./searchshodan
 * Added subdomain info
-* Removed fun cog
+* Moved googleapi cog into osint cog
 
 Want this bot in your server? [Invite Link](https://bit.ly/3fGmftl)  
 Donations are always appreicated! [Patreon](https://www.patreon.com/cinnamon1212)  
