@@ -102,35 +102,25 @@ class osint(commands.Cog):
         if username is None:
             await ctx.send(f"```{text}```")
         else:
+            links = ""
             if username[0] == "@":
                 username = username[1:]
-            async with request("GET", f"https://www.instagram.com/{username}/") as resp:
-                if resp.status == 404:
-                    first = None
-                else:
-                    first = username
-            url = f"https://searchusers.com/search/{username}"
+            q = username
+            cx = "c4cc3b449edaa17c2"
+            url = f"https://www.googleapis.com/customsearch/v1?key={apikey}&cx={cx}&q={q}&start=1"
             async with request("GET", url) as response:
-                if response.status == 200:
-                    html = await response.text()
+                data = await response.json()
+            try:
+                account_links = data['items']
+                for link in account_links[:30]:
+                    links += f"+ {link['formattedUrl']}\n"
+                await ctx.send(f"""```diff
+{links}```""")
+            except KeyError:
+                if links == "":
+                    await ctx.send(f"```No search results found for {username}\n{text}```")
                 else:
-                    await ctx.send(f"```Website returned code: {response.status}, please try again later\n{text}```")
-                    html = None
-
-            if html is not None:
-                soup = BeautifulSoup(html, 'html.parser')
-                accounts = soup.find_all(class_="timg")
-                account_links = ""
-                if first is not None:
-                    account_links += f"\n+ {first}"
-
-                for account in accounts:
-                    x = account.get("href")
-                    if x is not None:
-                        account_links += f"\n+ {x[29:]}"
-                await ctx.send(f"""
-```diff
-{account_links}```""")
+                    await ctx.send(f"```diff\nOne result found from direct instagram search:\n{links}```")
 
     @commands.command(name="facebooklookup", description="Search for Facebook users", aliases=["fbusers"])
     async def facebooklookup(self, ctx, *, username=None):
@@ -386,6 +376,30 @@ You may pass your own dork, but you must escape any quotation marks with \\
         """
         if isinstance(error, commands.errors.UnexpectedQuoteError):
             await ctx.send(f"```Please escape \" with \\\n{text}```")
+
+    @commands.command(name="exploitdb", description="Search exploitdb", aliases=["exDB"])
+    async def exploitdb(self, ctx, *, query):
+        q=query,
+        cx="52b54907be70ff59c"
+        url = f"https://www.googleapis.com/customsearch/v1?key={apikey}&cx={cx}&q={q}&start=1"
+        async with request("GET", url) as response:
+            search_response = await response.json()
+        embed = Embed(title=f"top 10 search results for {query}",
+                      colour=discord.Colour.red())
+        embed.set_thumbnail(url="https://www.exploit-db.com/images/spider-white.png")
+        for item in search_response['items']:
+            embed.add_field(name=item['title'], value=f"{item['snippet']} [Link]({item['link']})", inline=False)
+        await ctx.send(embed=embed)
+
+    @exploitdb.error
+    async def exdb_error(self, ctx, error):
+        text = "Usage: ./exdb [query]"
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```Please enter something to query\n{text}```")
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send(f"```No search result!\n{text}```")
+        else:
+            raise
 
 def setup(client):
     client.add_cog(osint(client))
