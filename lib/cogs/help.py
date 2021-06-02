@@ -30,10 +30,9 @@ class help(commands.Cog):
         main.add_field(name="```(5) OSINT```", value="OSINT Utilities")
         main.add_field(name="```(6) Administration```", value="General administration commands", inline=False)
         main.add_field(name="```(7) Maths```", value="Math utilities", inline=False)
-        main.add_field(name="```(8) Fun```", value="Fun and off-topic commands", inline=False)
-        main.add_field(name="```(9) Misc```", value="Bot information and commands without a category", inline=False)
-        main.add_field(name="```(10) Conversions```", value="Different types of converters", inline=False)
-        main.set_footer(text="Please use the 🔢 button to jump to a page (page 1 out of 10)")
+        main.add_field(name="```(8) Misc```", value="Bot information and commands without a category", inline=False)
+        main.add_field(name="```(9) Conversions```", value="Different types of converters", inline=False)
+        main.set_footer(text="Please use the 🔢 button to jump to a page (page 1 out of 9)")
         pages.append(main)
 
         utils = Embed(title="Networking and hacking utilities", colour=discord.Colour.red())
@@ -51,7 +50,7 @@ class help(commands.Cog):
                 continue
             else:
                 utils.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        utils.set_footer(text="Please use the 🔢 button to jump to a page (page 2 out of 10)")
+        utils.set_footer(text="Please use the 🔢 button to jump to a page (page 2 out of 9)")
         pages.append(utils)
 
         web = Embed(title="Website and cryptography utilities", colour=discord.Colour.red())
@@ -62,7 +61,7 @@ class help(commands.Cog):
                 continue
             else:
                 web.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        web.set_footer(text="Please use the 🔢 button to jump to a page (page 3 out of 10)")
+        web.set_footer(text="Please use the 🔢 button to jump to a page (page 3 out of 9)")
         for command in self.client.get_cog("encoding").walk_commands():
             if command.hidden:
                 continue
@@ -80,14 +79,8 @@ class help(commands.Cog):
                 continue
             else:
                 recourses.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        for command in self.client.get_cog("googleapi").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            else:
-                recourses.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        recourses.set_footer(text="Please use the 🔢 button to jump to a page (page 4 out of 10)")
+
+        recourses.set_footer(text="Please use the 🔢 button to jump to a page (page 4 out of 9)")
         pages.append(recourses)
 
         OSINT = Embed(title="OSINT utilities", colour=discord.Colour.red())
@@ -98,7 +91,7 @@ class help(commands.Cog):
                 continue
             else:
                 OSINT.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        OSINT.set_footer(text="Please use the 🔢 button to jump to a page (page 5 out of 10)")
+        OSINT.set_footer(text="Please use the 🔢 button to jump to a page (page 5 out of 9)")
         pages.append(OSINT)
 
         admin = Embed(title="General administration commands", colour=discord.Colour.red())
@@ -120,19 +113,9 @@ class help(commands.Cog):
                 continue
             else:
                 maths.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        maths.set_footer(text="Please use the 🔢 button to jump to a page (page 7 out of 10)")
+        maths.set_footer(text="Please use the 🔢 button to jump to a page (page 7 out of 9)")
         pages.append(maths)
 
-        fun = Embed(title="Fun and off-topic commands", colour=discord.Colour.red())
-        for command in self.client.get_cog("fun").walk_commands():
-            if command.hidden:
-                continue
-            elif command.parent is not None:
-                continue
-            else:
-                fun.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        fun.set_footer(text="Please use the 🔢 button to jump to a page (page 8 out of 10)")
-        pages.append(fun)
 
         misc = Embed(title="Bot information and commands without a category", colour=discord.Colour.red())
         for command in self.client.get_cog("misc").walk_commands():
@@ -142,7 +125,7 @@ class help(commands.Cog):
                 continue
             else:
                 misc.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        misc.set_footer(text="Please use the 🔢 button to jump to a page (page 9 out of 10)")
+        misc.set_footer(text="Please use the 🔢 button to jump to a page (page 8 out of 9)")
         pages.append(misc)
 
         conversions = Embed(title="Different types of converters", colour=discord.Colour.red())
@@ -153,7 +136,7 @@ class help(commands.Cog):
                 continue
             else:
                 conversions.add_field(name=f"**{command.name}**", value=f"{command.description} - Format: {syntax(command)}", inline=False)
-        conversions.set_footer(text="Please use the 🔢 button to jump to a page (page 10 out of 10)")
+        conversions.set_footer(text="Please use the 🔢 button to jump to a page (page 9 out of 9)")
         pages.append(conversions)
 
         paginator = Paginator(pages=pages)
