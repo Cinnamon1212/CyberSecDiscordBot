@@ -6,9 +6,9 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Beta 3.2"
+version = "Stable release 1.0"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
-torversion = subprocess.check_output("tor --version", shell=True).decode()
+OS_Name = subprocess.check_output(["uname", "-a"]).decode('utf-8')
 
 class misc(commands.Cog):
     def __init__(self, client):
@@ -93,13 +93,12 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Number of cached messages: ", value=cached, inline = False)
         embed.add_field(name="Support server: ", value="https://discord.gg/DxCvp627AT", inline=False)
         embed.add_field(name="Github: ", value="https://github.com/Cinnamon1212/CyberSecDiscordBot", inline=False)
-        embed.add_field(name="OS: ", value=platform.platform(), inline=False)
+        embed.add_field(name="OS: ", value=OS_Name, inline=False)
         process = psutil.Process(os.getpid())
         embed.add_field(name="Memory usage: ", value=f"{round(process.memory_info().rss / 1024 ** 2, 2)} Mbs", inline=False)
         embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
         embed.add_field(name="Python version: ", value=sys.version, inline=False)
         embed.add_field(name="Discord.py version: ", value=discord.__version__)
-        embed.add_field(name="Tor version", value=torversion, inline=False)
         mtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + mtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
@@ -129,6 +128,13 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Patreon: ", value="[Link](https://www.patreon.com/cinnamon1212)", inline=False)
         embed.add_field(name="Bitcoin: ", value="bc1q9ery77lperksj6fc0thedp5vkj33vfsqx8880xu3t44r3hexnsfshlzve0", inline=False)
         await ctx.send(embed=embed)
+
+    @commands.command(name="support", description="Link to the support server")
+    async def support(self, ctx):
+        embed = Embed(title="Support server")
+        enbed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.add_field(name="Discord link: ", value="https://discord.gg/DxCvp627AT")
+
 
 
 def setup(client):
