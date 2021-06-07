@@ -117,6 +117,8 @@ Latency: {round(self.client.latency * 1000)} ms
     async def vote(self, ctx):
         embed = Embed(title="All votes are appreciated!", colour=discord.Colour.random())
         embed.add_field(name="Top.gg", value="[vote](https://top.gg/bot/766312320589627463/vote)")
+        embed.add_field(name="discordbotlist", value="[vote](https://discordbotlist.com/bots/cybersecurity-bot)")
+        embed.add_field(name="discord.me", value="[vote](https://discord.me/cybersecbot))")
         dtime = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + dtime.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
@@ -132,8 +134,9 @@ Latency: {round(self.client.latency * 1000)} ms
     @commands.command(name="support", description="Link to the support server")
     async def support(self, ctx):
         embed = Embed(title="Support server")
-        enbed.set_thumbnail(url=self.client.user.avatar_url)
+        embed.set_thumbnail(url=self.client.user.avatar_url)
         embed.add_field(name="Discord link: ", value="https://discord.gg/DxCvp627AT")
+        await ctx.send(embed=embed)
 
 
 
