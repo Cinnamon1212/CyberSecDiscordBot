@@ -7,7 +7,7 @@ class admin(commands.Cog):
 
     @commands.command(name="kick", description="Kicks a discord user", aliases=["kickhammer"])
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member = None, *, reason="Unspecified reason"):
+    async def kick(self, ctx, member: discord.Member, *, reason="Unspecified reason"):
         text = "Usage: ./kick [member] (reason)"
         if member is None:
             await ctx.send(f"```{text}```")
@@ -28,7 +28,7 @@ class admin(commands.Cog):
             text = "Usage: ./kick [member] (reason)"
             await ctx.send(f"```You do not have sufficient permissions to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("An error has occured, likely the bot is missing permissions")
+            await ctx.send(f"```An error has occured, likely the bot is missing permissions\n{text}```")
         else:
             raise
 
@@ -53,38 +53,35 @@ class admin(commands.Cog):
     async def ban_error(self, ctx, error):
         text = "Usage: ./ban [member] (reason)"
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send(f"You do not have sufficient permissiosn to use this command\n```{text}```")
+            await ctx.send(f"```You do not have sufficient permissiosn to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("An error has occured, likely the bot is missing permissions")
+            await ctx.send(f"```An error has occured, likely the bot is missing permissions\n{text}```")
         else:
             raise
 
     @commands.command(name="unban", description="unbans a discord user", aliases=["unbanhammer"])
     @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, *, member=None):
+    async def unban(self, ctx, *, member):
         text = "Usage: ./uban [member/ID]"
-        if member is None:
-            await ctx.send(f"```{text}```")
+        if len(member) == 18:
+            try:
+                member = int(member)
+                user = self.client.fetch_user
+                await ctx.guild.unban(user)
+                stop = True
+            except discord.NotFound:
+                await ctx.send(f"```Unable to find a user with the provided ID!\n{text}```")
+                stop = True
         else:
-            if len(member) == 18:
-                try:
-                    member = int(member)
-                    user = self.client.fetch_user
-                    await ctx.guild.unban(user)
-                    stop = True
-                except discord.NotFound:
-                    await ctx.send(f"```Unable to find a user with the provided ID!\n{text}```")
-                    stop = True
-            else:
-                stop = False
-            if stop is False:
-                banned_users = await ctx.guild.bans()
-                member_name, member_discriminator = member.split('#')
-                for banned in banned_users:
-                    x = banned.user
-                    if (x.name, x.discriminator) == (member_name, member_discriminator):
-                        await ctx.guild.unban(x)
-                        await ctx.send(f"{x.name}#{x.discriminator} has been unbanned")
+            stop = False
+        if stop is False:
+            banned_users = await ctx.guild.bans()
+            member_name, member_discriminator = member.split('#')
+            for banned in banned_users:
+                x = banned.user
+                if (x.name, x.discriminator) == (member_name, member_discriminator):
+                    await ctx.guild.unban(x)
+                    await ctx.send(f"```{x.name}#{x.discriminator} has been unbanned```")
 
     @unban.error
     async def unban_error(self, ctx, error):
@@ -92,7 +89,9 @@ class admin(commands.Cog):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send(f"```You do not have sufficient permissiosn to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send("An error has occured, likely the bot is missing permissions")
+            await ctx.send(f"```An error has occured, likely the bot is missing permissions\n{text}```")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```{text}```")
         else:
             raise
 
@@ -180,27 +179,27 @@ if the command is not in the channel, please specify the channel"""
     @commands.command(name="userinfo", aliases=['user', 'memberinfo'], description="Gathers information on a user")
     async def userinfo(self, ctx, *, member: discord.Member=None):
         text = "Usage: ./userinfo [member]"
-        if member is None:
-            await ctx.send(f"```{text}```")
-        else:
-            roles = [role for role in member.roles]
-            embed = discord.Embed(colour=member.colour)
-            embed.set_author(name=f"User info for {member}")
-            embed.set_thumbnail(url=member.avatar_url)
-            time = ctx.message.created_at
-            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-            embed.add_field(name="ID:", value=member.id, inline=False)
-            embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
-            embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
-            embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
-            embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]), inline=False)
-            embed.add_field(name="Top role:", value=member.top_role.mention, inline=False)
-            embed.add_field(name="Bot?", value=member.bot, inline=False)
-            await ctx.send(embed=embed)
+        roles = [role for role in member.roles]
+        embed = discord.Embed(colour=member.colour)
+        embed.set_author(name=f"User info for {member}")
+        embed.set_thumbnail(url=member.avatar_url)
+        time = ctx.message.created_at
+        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+        embed.add_field(name="ID:", value=member.id, inline=False)
+        embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
+        embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+        embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+        embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]), inline=False)
+        embed.add_field(name="Top role:", value=member.top_role.mention, inline=False)
+        embed.add_field(name="Bot?", value=member.bot, inline=False)
+        await ctx.send(embed=embed)
 
     async def userinfo_error(self, ctx, error):
+        text = "Usage: ./userinfo [member]"
         if isinstance(error, commands.MemberNotFound):
-            await ctx.send("```User not found\nUsage: ./userinfo [member]```")
+            await ctx.send(f"```User not found\n{text}```")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```{text}```")
 
 
     @commands.command(name="serverinfo", aliases=['server', 'guildinfo'], description="Gathers information of the server")
@@ -248,7 +247,7 @@ if the command is not in the channel, please specify the channel"""
 
     @rolemod.error
     async def rolemod_error(self, ctx, error):
-        text = "Usage: ./rolemod [member] [role]"
+        text = "Usage: ./rolemod [method] [member] [role]"
         if isinstance(error, commands.MissingPermissions):
             await ctx.send(f"```You do not have permissions to run this command\n{text}```")
         elif isinstance(error, commands.MemberNotFound):
