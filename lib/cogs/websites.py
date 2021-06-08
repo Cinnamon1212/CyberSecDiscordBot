@@ -1,4 +1,5 @@
-import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
+import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re, click
+from pyppeteer import launch, errors
 from async_timeout import timeout
 from faker.providers import bank, credit_card, phone_number
 from discord import Embed
@@ -23,6 +24,9 @@ def chase_redirects(url):
 class websites(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.urlRegex =  r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]" \
+        "{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>" \
+        "]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 
     @commands.command(name="StatusCheck", aliases=["Websitestatus", "webstatus", "httpstatus"], description="Used for getting http response code of a web page")
     async def website(self, ctx, url=""):
@@ -151,8 +155,53 @@ class websites(commands.Cog):
                 else:
                     await ctx.send(f"```There was an issue with the API\n{text}```")
 
+    @commands.command(name="webss", description="Take a screenshot of a website", aliases=["webscreenshot", "websitescreenshot"])
+    async def webss(self, ctx, url, width = "1200", height = "800"):
+        text = "Usage: ./webss [url] (width) (height)"
+        if isinstance(ctx.channel, discord.channel.DMChannel):
+            check = True
+        else:
+            if ctx.channel.is_nsfw():
+                check = True
+            else:
+                check = False
+        if check is True:
+            try:
+                width = int(width)
+                height = int(height)
+            except ValueError:
+                await ctx.send(f"```Height and width must be integers\n{text}```")
+            else:
+                url = re.findall(self.urlRegex, url)
+                if(len(url) != 1):
+                    await ctx.send(f""""```{url} is invalid, please use the following format:
+    http(s)://example.com/path\n{text}```""")
+                else:
+                    filename = f"./websites/{ctx.author.id}.png"
+                    try:
+                        await ctx.send("Attempting to take a screenshot, please wait..")
+                        browser = await launch()
+                        page = await browser.newPage()
+                        await page.setViewport({"width": width, "height": height})
+                        await page.goto(url[0][0])
+                        await page.screenshot({"path": filename})
+                    except errors.PageError:
+                        await ctx.send(f"```Unable to connect to website\n{text}```")
 
-
+                    if os.path.exists(filename):
+                        await ctx.send(file=discord.File(filename))
+                        os.remove(filename)
+        else:
+            await ctx.send(f"```This command may only be used within an NSFW channel (to filter 18+ website) OR via DMs\n{text}```")
+    @webss.error
+    async def webssError(self, ctx, error):
+        text = "Usage: ./webss [url] (width) (height)"
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```{text}```")
+        else:
+            await ctx.send(f"```An unknown error occured!\n{text}```")
+            raise error
+            
 
 def setup(client):
     client.add_cog(websites(client))
