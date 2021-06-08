@@ -1,4 +1,4 @@
-import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re, click
+import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
 from pyppeteer import launch, errors
 from async_timeout import timeout
 from faker.providers import bank, credit_card, phone_number
