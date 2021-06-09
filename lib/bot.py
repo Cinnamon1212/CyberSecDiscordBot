@@ -2,11 +2,6 @@ import discord, os, json
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 intents = discord.Intents.default()
-intents.voice_states = False
-intents.typing = False
-intents.guild_typing = False
-intents.dm_typing = False
-intents.invites = False
 
 
 client = commands.Bot(command_prefix='.//', case_insensitive=True,
