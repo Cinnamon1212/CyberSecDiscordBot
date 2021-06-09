@@ -84,8 +84,6 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="Uptime: ", value=text, inline=False)
         embed.add_field(name="Version: ", value=version, inline=False)
         embed.add_field(name="Number of servers: ", value=len(self.client.guilds), inline=False)
-        embed.add_field(name="Online users: ", value=str(len({m.id for m in self.client.get_all_members() if m.status is not discord.Status.offline})), inline=False)
-        embed.add_field(name="Total users: ", value=len(self.client.users), inline=False)
         embed.add_field(name="Total channels: ", value=sum(1 for g in self.client.guilds for _ in g.channels), inline=False)
         cached = sum(1 for m in self.client.cached_messages)
         if cached == 1000:
