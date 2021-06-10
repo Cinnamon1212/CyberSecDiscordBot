@@ -6,9 +6,23 @@ from discord import AppInfo
 from pygicord import Paginator
 
 start_time = time.time()
-version = "Stable release 1.0"
+version = "Stable release 1.2"
 owner = "c̸͙̪̦͛̽͝i̵̺̝͕̐͌̓n̵̞͉̪͋̾̔n̴̼̙͖̔͠a̴̺͇̦̾͊̕m̴̝͚͕͒͝͠o̸͔̼̔̐̚n̴̺͍̈́̐͝1̸̢͙͍͌͝2̵̘̘͍̿̀͘1̵͉͎͔͊͒͝2̵͎͖̞̈́̓̿"
 OS_Name = subprocess.check_output(["uname", "-a"]).decode('utf-8')
+
+def get_pages(pagescount, roles):
+    z = 1
+    pages = []
+    x = 1
+    for i in range(1, pagecount + 1):
+        embed = Embed(title=f"{ctx.message.guild.name} roles", colour=discord.Colour.random())
+        embed.set_footer(text=f"Page {x}/{pagecount}")
+        x += 1
+        for role in roles[x - 2]:
+            embed.add_field(name=f"#{z}", value=role.name)
+            z += 1
+        pages.append(embed)
+    return pages
 
 class misc(commands.Cog):
     def __init__(self, client):
@@ -40,20 +54,6 @@ Latency: {round(self.client.latency * 1000)} ms
 
     @commands.command(name="listofroles", description="Gives a list of roles", aliases=["roles", "serverroles"])
     async def listofroles(self, ctx):
-        def get_pages(pagescount, roles):
-            z = 1
-            pages = []
-            x = 1
-            for i in range(1, pagecount + 1):
-                embed = Embed(title=f"{ctx.message.guild.name} roles", colour=discord.Colour.random())
-                embed.set_footer(text=f"Page {x}/{pagecount}")
-                x += 1
-                for role in roles[x - 2]:
-                    embed.add_field(name=f"#{z}", value=role.name)
-                    z += 1
-                pages.append(embed)
-            return pages
-
         roles = ctx.guild.roles
         roles.reverse()
         roles.pop(-1)
@@ -61,6 +61,13 @@ Latency: {round(self.client.latency * 1000)} ms
         pagecount = math.ceil(len(roles) / 25)
         paginator = Paginator(pages=get_pages(pagecount, roleslist))
         await paginator.start(ctx)
+
+    @listofroles.error
+    async def listofroles_error(self, ctx, error):
+        text = "./listofroles"
+        await ctx.send(f"```An unknown error has occured!\n{text}```")
+
+
 
     @commands.command(name="credits", description="Info on the bot creator!", aliases=["owner", "creator", "credit"])
     async def credits(self, ctx):
@@ -94,7 +101,7 @@ Latency: {round(self.client.latency * 1000)} ms
         embed.add_field(name="OS: ", value=OS_Name, inline=False)
         process = psutil.Process(os.getpid())
         embed.add_field(name="Memory usage: ", value=f"{round(process.memory_info().rss / 1024 ** 2, 2)} Mbs", inline=False)
-        embed.add_field(name="CPU usage:", value=f"{process.cpu_percent(interval=None)}%", inline=False)
+        embed.add_field(name="CPU usage:", value=f"{psutil.cpu_percent()}%", inline=False)
         embed.add_field(name="Python version: ", value=sys.version, inline=False)
         embed.add_field(name="Discord.py version: ", value=discord.__version__)
         mtime = ctx.message.created_at
