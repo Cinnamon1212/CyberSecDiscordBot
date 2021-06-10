@@ -197,6 +197,7 @@ class websites(commands.Cog):
                         await page.setViewport({"width": width, "height": height})
                         await page.goto(url[0][0])
                         await page.screenshot({"path": filename})
+                        await browser.close()
                     except errors.PageError:
                         await ctx.send(f"```Unable to connect to website\n{text}```")
 
@@ -213,6 +214,9 @@ class websites(commands.Cog):
         else:
             await ctx.send(f"```An unknown error occured!\n{text}```")
             raise error
+
+
+
 
 
 def setup(client):
