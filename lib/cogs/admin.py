@@ -62,7 +62,7 @@ class admin(commands.Cog):
     @commands.command(name="unban", description="unbans a discord user", aliases=["unbanhammer"])
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, *, member):
-        text = "Usage: ./uban [member/ID]"
+        text = "Usage: ./unban [member/ID]"
         if len(member) == 18:
             try:
                 member = int(member)
@@ -85,7 +85,7 @@ class admin(commands.Cog):
 
     @unban.error
     async def unban_error(self, ctx, error):
-        text = "Usage: ./uban [member/ID]"
+        text = "Usage: ./unban [member/ID]"
         if isinstance(error, commands.MissingPermissions):
             await ctx.send(f"```You do not have sufficient permissiosn to use this command\n{text}```")
         elif isinstance(error, commands.CommandInvokeError):
@@ -179,20 +179,24 @@ if the command is not in the channel, please specify the channel"""
     @commands.command(name="userinfo", aliases=['user', 'memberinfo'], description="Gathers information on a user")
     async def userinfo(self, ctx, *, member: discord.Member=None):
         text = "Usage: ./userinfo [member]"
-        roles = [role for role in member.roles]
-        embed = discord.Embed(colour=member.colour)
-        embed.set_author(name=f"User info for {member}")
-        embed.set_thumbnail(url=member.avatar_url)
-        time = ctx.message.created_at
-        embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
-        embed.add_field(name="ID:", value=member.id, inline=False)
-        embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
-        embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
-        embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
-        embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]), inline=False)
-        embed.add_field(name="Top role:", value=member.top_role.mention, inline=False)
-        embed.add_field(name="Bot?", value=member.bot, inline=False)
-        await ctx.send(embed=embed)
+        try:
+            roles = [role for role in member.roles]
+        except AttributeError:
+            await ctx.send(f"```{text}```")
+        else:
+            embed = discord.Embed(colour=member.colour)
+            embed.set_author(name=f"User info for {member}")
+            embed.set_thumbnail(url=member.avatar_url)
+            time = ctx.message.created_at
+            embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
+            embed.add_field(name="ID:", value=member.id, inline=False)
+            embed.add_field(name="Guild name: ", value=member.display_name, inline=False)
+            embed.add_field(name="Created at: ", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+            embed.add_field(name="Joined at: ", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
+            embed.add_field(name=f"Roles ({len(roles)})", value="".join([role.mention for role in roles]), inline=False)
+            embed.add_field(name="Top role:", value=member.top_role.mention, inline=False)
+            embed.add_field(name="Bot?", value=member.bot, inline=False)
+            await ctx.send(embed=embed)
 
     async def userinfo_error(self, ctx, error):
         text = "Usage: ./userinfo [member]"
@@ -204,23 +208,28 @@ if the command is not in the channel, please specify the channel"""
 
     @commands.command(name="serverinfo", aliases=['server', 'guildinfo'], description="Gathers information of the server")
     async def serverinfo(self, ctx):
-        name, desc, owner, id, region, membercount, servericon = str(ctx.guild.name), str(ctx.guild.description), str(ctx.guild.owner), str(ctx.guild.id), str(ctx.guild.region), str(ctx.guild.member_count), str(ctx.guild.icon_url)
-        roles = ctx.guild.roles
-        rolecount = len(roles)
+        if ctx.guild.description is None:
+            desc = "this server has no description"
+        else:
+            desc = ctx.guild.description
         embed = discord.Embed(
-            title=f"{name} information",
+            title=f"{ctx.guild.name} information",
             description=desc,
-            colour=discord.Colour.green())
-        embed.set_thumbnail(url=servericon)
-        embed.add_field(name="Owner: ", value=owner, inline=False)
-        embed.add_field(name="ID: ", value=id, inline=False)
-        embed.add_field(name="Region: ", value=region, inline=False)
-        embed.add_field(name="Member count: ", value=f"This server has {membercount} members", inline=False)
-        embed.add_field(name="Roles: ", value=f"This server has {rolecount - 1} roles", inline=False)
+            colour=discord.Colour.random())
+        embed.set_thumbnail(url=ctx.guild.icon_url)
+        embed.add_field(name="ID: ", value=ctx.guild.id, inline=False)
+        embed.add_field(name="Region: ", value=ctx.guild.region, inline=False)
+        embed.add_field(name="Member count: ", value=f"This server has {ctx.guild.member_count} members", inline=False)
+        embed.add_field(name="Roles: ", value=f"This server has {len(ctx.guild.roles) - 1} roles", inline=False)
         embed.set_thumbnail(url=ctx.guild.icon_url)
         time = ctx.message.created_at
         embed.set_footer(text=f"Asked by {ctx.author.name} " + time.strftime("%d/%m/%y %X"))
         await ctx.send(embed=embed)
+
+    @serverinfo.error
+    async def serverinfo_error(self, ctx, error):
+        await ctx.send(f"""```An error has occured while running the command.
+Please ensure this is ran within the context of a server/guild\nUsage: ./serverinfo```""")
 
 
     @commands.command(name="rolemod", description="Add/Remove a role to a user", aliases=["giverole", "addrole", "remrole"])
