@@ -1,4 +1,4 @@
-import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re
+import discord, os, requests, json, exiftool, faker, aiofiles, asyncio, re, click
 from pyppeteer import launch, errors
 from async_timeout import timeout
 from faker.providers import bank, credit_card, phone_number
@@ -9,7 +9,6 @@ from aiohttp import request
 with open('secrets.json', 'r') as secrets:
     data = secrets.read()
 keys = json.loads(data)
-securitytrailskey = keys['securitytrails']
 
 def chase_redirects(url):
     while True:
@@ -29,19 +28,22 @@ class websites(commands.Cog):
         "]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 
     @commands.command(name="StatusCheck", aliases=["Websitestatus", "webstatus", "httpstatus"], description="Used for getting http response code of a web page")
-    async def website(self, ctx, url=""):
-        if url == "":
-            await ctx.send("Usage: ./webstatus (url)")
+    async def websiteStatus(self, ctx, url):
+        async with request("HEAD", url) as resp:
+            await ctx.send(f"website returned: {resp.status}")
+
+    @websiteStatus.error
+    async def websiteStatus_error(self, ctx, error):
+        text = "Usage: ./statuscheck [url]"
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```{text}```")
         else:
-            async with request("GET", url) as resp:
-                await ctx.send(f"website returned: {resp.status}")
+            await ctx.send(f"```An unknown error has occured!\n{text}```")
+            raise error
 
     @commands.command(name="emailchecker", description="Verifies if an email is real or not", aliases=["emailverify", "emailinfo"])
     async def emailchecker(self, ctx, email: str):
-        with open('secrets.json', 'r') as secrets:
-            data1 = secrets.read()
-        hunterapikey = json.loads(data1)
-        apikey = hunterapikey['hunteriokey']
+        apikey = keys['hunteriokey']
         url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={apikey}"
         async with request("GET", url, headers={}) as response:
             if response.status == 200:
@@ -114,46 +116,56 @@ class websites(commands.Cog):
     @commands.command(name="RedirectChaser", description="Finds all redirects associated with a link", aliases=["Wheregoes", "RedirectChecker"])
     async def redirectchaser(self, ctx, url=None):
         text = "Usage: ./wheregoes [URL]"
-        if url is None:
+        try:
+            requests.get(url)
+        except requests.ConnectionError:
+            await ctx.send(f"Unable to connect to {url}\n{text}")
+        urls = []
+        for url_redirects in chase_redirects(url):
+            urls.append(url_redirects)
+        embed = Embed(title=f"Redirects for {url}",
+                      colour=discord.Colour.red())
+        num = 1
+        for url in urls:
+            embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
+            num += 1
+        await ctx.send(embed=embed)
+
+    @redirectchaser.error
+    async def redirectchaser_error(self, ctx, error):
+        text = "Usage: ./wheregoes [URL]"
+        if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f"```{text}```")
         else:
-            try:
-                requests.get(url)
-            except requests.ConnectionError:
-                await ctx.send(f"Unable to connect to {url}\n{text}")
-            urls = []
-            for url_redirects in chase_redirects(url):
-                urls.append(url_redirects)
-            embed = Embed(title=f"Redirects for {url}",
-                          colour=discord.Colour.red())
-            num = 1
-            for url in urls:
-                embed.add_field(name=f"Redirect #{num}", value=url, inline=False)
-                num += 1
-            await ctx.send(embed=embed)
+            await ctx.send(f"```An unknown error has occured\n{text}```")
 
     @commands.command(name="subdomain", description="Find subdomains", aliases=["sdomains"])
-    async def findsubdomains(self, ctx, domain=None):
+    async def findsubdomains(self, ctx, domain):
         text = "Usage: ./subdomain [domain]"
-        if domain is None:
+        url = f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
+        querystring = {"children_only": "false", "include_inactive": "true"}
+        headers = {"Accept": "application/json", "apikey": keys['securitytrails']}
+        async with request("GET", url, headers=headers, params=querystring) as response:
+            if response.status == 200:
+                data = await response.json()
+                Found_Subdomains = data['subdomains']
+                if len(Found_Subdomains) == 0:
+                    await ctx.send(f"```No subdomain records found!\n{text}```")
+                else:
+                    subdomains = "First 10 subdomains:"
+                    for sub in Found_Subdomains[:20]:
+                        subdomains += f"\n{sub}.{domain}"
+                    await ctx.send(f"```{subdomains}```")
+            else:
+                await ctx.send(f"```There was an issue with the API\n{text}```")
+
+    @findsubdomains.error
+    async def findsubdomains_error(self, ctx, error):
+        text = "Usage: ./subdomain [domain]"
+        if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f"```{text}```")
         else:
-            url = f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
-            querystring = {"children_only": "false", "include_inactive": "true"}
-            headers = {"Accept": "application/json", "apikey": securitytrailskey}
-            async with request("GET", url, headers=headers, params=querystring) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    Found_Subdomains = data['subdomains']
-                    if len(Found_Subdomains) == 0:
-                        await ctx.send(f"```No subdomain records found!\n{text}```")
-                    else:
-                        subdomains = "First 10 subdomains:"
-                        for sub in Found_Subdomains[:20]:
-                            subdomains += f"\n{sub}.{domain}"
-                        await ctx.send(f"```{subdomains}```")
-                else:
-                    await ctx.send(f"```There was an issue with the API\n{text}```")
+            await ctx.send(f"```An unknown error has occured\n{text}```")
 
     @commands.command(name="webss", description="Take a screenshot of a website", aliases=["webscreenshot", "websitescreenshot"])
     async def webss(self, ctx, url, width = "1200", height = "800"):
@@ -201,7 +213,7 @@ class websites(commands.Cog):
         else:
             await ctx.send(f"```An unknown error occured!\n{text}```")
             raise error
-            
+
 
 def setup(client):
     client.add_cog(websites(client))
