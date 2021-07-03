@@ -120,60 +120,41 @@ class encoding(commands.Cog):
     @commands.command("decaesercipher", description="bruteforces a ceaser cipher", aliases=["decodecaesercipher", "caeserdecode", "deCaeser"])
     @commands.cooldown(rate=1, per=10)
     async def deCaeser(self, ctx, *,message: str):
-        if len(message) <= 25:
+        if len(message) <= 50:
             hasNums = bool(re.search(r'\d', message))
-            if hasNums is False:
-                result = ""
-                letters = "abcdefghijklmnopqrstuvwxyz"
-                enc_string = message
-                x = 0
-                while x < 26:
-                    x = x + 1
-                    stringtodecrypt = enc_string
-                    stringtodecrypt = stringtodecrypt.lower()
-                    ciphershift = int(x)
-                    stringdecrypted = ""
-                    for character in stringtodecrypt:
-                        position = letters.find(character)
-                        newposition = position-ciphershift
-                        if character in letters:
-                            stringdecrypted = stringdecrypted + letters[newposition]
-                        else:
-                            stringdecrypted = stringdecrypted + character
-                    ciphershift = ciphershift
-                    result += f"\nShift: {ciphershift}\nResult:{stringdecrypted}\n"
-                results = f"""```{result}```"""
-                await ctx.author.send(results)
-
-            else:
-                result = ""
-                letters = "abcdefghijklmnopqrstuvwxyz1234567890"
-                enc_string = message
-                x = 0
-                while x < 36:
-                    x = x + 1
-                    stringtodecrypt = enc_string
-                    stringtodecrypt = stringtodecrypt.lower()
-                    ciphershift = int(x)
-                    stringdecrypted = ""
-                    for character in stringtodecrypt:
-                        position = letters.find(character)
-                        newposition = position-ciphershift
-                        if character in letters:
-                            stringdecrypted = stringdecrypted + letters[newposition]
-                        else:
-                            stringdecrypted = stringdecrypted + character
-                    ciphershift = ciphershift
-                    result += f"\nShift: {ciphershift}\nResult:{stringdecrypted}\n"
-                results = f"""```{result}```"""
-                await ctx.author.send(results)
+            result = ""
+            letters = "abcdefghijklmnopqrstuvwxyz"
+            enc_string = message
+            x = 0
+            while x < 26:
+                x = x + 1
+                stringtodecrypt = enc_string
+                stringtodecrypt = stringtodecrypt.lower()
+                ciphershift = int(x)
+                stringdecrypted = ""
+                for character in stringtodecrypt:
+                    position = letters.find(character)
+                    newposition = position-ciphershift
+                    if character in letters:
+                        stringdecrypted = stringdecrypted + letters[newposition]
+                    else:
+                        stringdecrypted = stringdecrypted + character
+                ciphershift = ciphershift
+                result += f"\nShift: {ciphershift}\nResult:{stringdecrypted}\n"
+            results = f"""```{result}```"""
+            await ctx.author.send(results)
         else:
-            await ctx.send("The string may only be up to 25 characters")
+            await ctx.send("```The string may only be up to 50 characters```")
 
     @deCaeser.error
     async def decaeser_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f"Please wait {error.retry_after} before using this command")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"```Usage: ./decaesercipher [string]```")
+        else:
+            await ctx.send("```An unknown error has occured!\nUsage: ./decaesercipher [string]```")
+            raise error
 
     @commands.command(name="hash", description="Hashes a string using a given algorithm (MD5, SHA1, SHA224, SHA256, SHA384 and SHA512)", aliases=["hashstring", "crypt"])
     async def hash(self, ctx, hashtype=None, *, message: str = None):
@@ -239,8 +220,7 @@ Hash types:
                 if isinstance(y, tuple):
                     for x in y:
                         result += f"\n+ {x}"
-            await ctx.send(f"""```diff
-{result}```""")
+            await ctx.send(f"""```diff\n{result}```""")
 
 
 def setup(client):
