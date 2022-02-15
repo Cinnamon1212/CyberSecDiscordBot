@@ -120,7 +120,7 @@ class encoding(commands.Cog):
     @commands.command("decaesercipher", description="bruteforces a ceaser cipher", aliases=["decodecaesercipher", "caeserdecode", "deCaeser"])
     @commands.cooldown(rate=1, per=10)
     async def deCaeser(self, ctx, *,message: str):
-        if len(message) <= 200:
+        if len(message) <= 2000:
             hasNums = bool(re.search(r'\d', message))
             result = ""
             letters = "abcdefghijklmnopqrstuvwxyz"
@@ -144,7 +144,7 @@ class encoding(commands.Cog):
             results = f"""```{result}```"""
             await ctx.author.send(results)
         else:
-            await ctx.send("```The string may only be up to 50 characters```")
+            await ctx.send("```The string may only be up to 2000 characters```")
 
     @deCaeser.error
     async def decaeser_error(self, ctx, error):
