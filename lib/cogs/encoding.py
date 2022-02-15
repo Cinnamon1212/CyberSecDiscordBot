@@ -120,7 +120,7 @@ class encoding(commands.Cog):
     @commands.command("decaesercipher", description="bruteforces a ceaser cipher", aliases=["decodecaesercipher", "caeserdecode", "deCaeser"])
     @commands.cooldown(rate=1, per=10)
     async def deCaeser(self, ctx, *,message: str):
-        if len(message) <= 50:
+        if len(message) <= 200:
             hasNums = bool(re.search(r'\d', message))
             result = ""
             letters = "abcdefghijklmnopqrstuvwxyz"
